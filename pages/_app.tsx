@@ -13,17 +13,16 @@ export default function App({ Component, pageProps }: AppProps) {
             
             {/* Screen Content Area */}
             <div 
-              className="relative bg-white overflow-hidden"
+              className="relative overflow-hidden"
               style={{
                 width: '393px',
                 height: '852px',
                 borderRadius: '2.5rem',
+                backgroundColor: 'transparent',
               }}
             >
-
-              
               {/* App Content Container */}
-              <div className="h-full pt-12 pb-8 overflow-auto scrollbar-hide">
+              <div className="h-full overflow-hidden scrollbar-hide">
                 <Component {...pageProps} />
               </div>
               
