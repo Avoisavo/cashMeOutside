@@ -85,7 +85,7 @@ export default function Home() {
           </button>
           
           <div className="flex items-center space-x-3">
-            <span className="text-white font-medium">{selectedSection}</span>
+         <span className="text-white font-bold text-l">Tony</span>   
             <div className="w-12 h-12 bg-white rounded-full overflow-hidden">
               <img 
                 src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face" 
@@ -145,7 +145,7 @@ export default function Home() {
                   key={index}
                   className={`
                     relative rounded-xl p-3 border transition-all duration-200 hover:scale-[1.02] cursor-pointer
-                    ${rate.code === 'KWD' 
+                    ${rate.code === 'MYR' 
                       ? 'bg-gradient-to-r from-yellow-500 to-orange-500 border-yellow-400/30 shadow-lg shadow-yellow-500/25' 
                       : 'bg-gray-800/60 border-gray-700/50 backdrop-blur-sm hover:bg-gray-700/60'
                     }
@@ -161,10 +161,10 @@ export default function Home() {
                         />
                       </div>
                       <div>
-                        <p className={`font-medium text-xs ${rate.code === 'KWD' ? 'text-black' : 'text-white'}`}>
+                        <p className={`font-medium text-xs ${rate.code === 'MYR' ? 'text-black' : 'text-white'}`}>
                           {rate.country} / {rate.code}
                         </p>
-                        <p className={`text-base font-semibold ${rate.code === 'KWD' ? 'text-black' : 'text-white'}`}>
+                        <p className={`text-base font-semibold ${rate.code === 'MYR' ? 'text-black' : 'text-white'}`}>
                           {rate.rate}
                         </p>
                       </div>
@@ -173,13 +173,13 @@ export default function Home() {
                       <span className={`text-xs font-medium ${
                         rate.isNegative 
                           ? 'text-red-400' 
-                          : rate.code === 'KWD' 
+                          : rate.code === 'MYR' 
                             ? 'text-black' 
                             : 'text-green-400'
                       }`}>
                         {rate.change}
                       </span>
-                      <svg className={`w-3 h-3 ${rate.code === 'KWD' ? 'text-black/60' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className={`w-3 h-3 ${rate.code === 'MYR' ? 'text-black/60' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
                       </svg>
                     </div>
@@ -187,7 +187,7 @@ export default function Home() {
                   
                   {/* Card highlight effect */}
                   <div className={`absolute inset-0 rounded-xl ${
-                    rate.code === 'KWD' 
+                    rate.code === 'MYR' 
                       ? 'bg-gradient-to-r from-yellow-400/20 to-orange-400/20' 
                       : 'bg-gradient-to-r from-transparent to-transparent hover:from-white/5 hover:to-transparent'
                   } pointer-events-none transition-all duration-200`}></div>
