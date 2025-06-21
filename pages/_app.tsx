@@ -1,27 +1,34 @@
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import Header from "../components/Header";
 import Background from "../components/Background";
 import BottomNavigation from "../components/BottomNavigation";
-import Home from "./index";
-import Trade from "./trade";
 
 export default function App({ Component, pageProps }: AppProps) {
+  const router = useRouter();
   const [selectedSection, setSelectedSection] = useState("Home");
 
-  const renderContent = () => {
-    switch (selectedSection) {
-      case "Home":
-        return <Home />;
-      case "Trade":
-        return <Trade />;
-      case "Wallet":
-        return <div className="h-full flex items-center justify-center text-white text-xl">Wallet Page Coming Soon</div>;
-      default:
-        return <Home />;
-    }
-  };
+  // Update selected section based on current route
+  useEffect(() => {
+    const path = router.pathname;
+    console.log('Route changed to:', path);
+    
+    // Simple mapping of routes to sections
+    const routeToSection: { [key: string]: string } = {
+      "/": "Home",
+      "/trade": "Trade", 
+      "/wallet": "Wallet",
+      "/exchange": "Trade"
+    };
+    
+    const newSection = routeToSection[path] || "Home";
+    console.log('Setting section to:', newSection);
+    setSelectedSection(newSection);
+  }, [router.pathname]);
+
+  console.log('Current pathname:', router.pathname, 'Selected section:', selectedSection);
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4 overflow-hidden">
@@ -53,7 +60,7 @@ export default function App({ Component, pageProps }: AppProps) {
                     
                     {/* Dynamic Page Content - This is where scrolling should happen */}
                     <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
-                      {renderContent()}
+                      <Component {...pageProps} />
                     </div>
                     
                     <BottomNavigation 

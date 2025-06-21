@@ -1,16 +1,37 @@
+import { useRouter } from "next/router";
+
 interface BottomNavigationProps {
   selectedSection: string;
   onSectionChange: (section: string) => void;
 }
 
 export default function BottomNavigation({ selectedSection, onSectionChange }: BottomNavigationProps) {
+  const router = useRouter();
+
+  const handleNavigation = async (path: string, section: string) => {
+    try {
+      console.log('Navigation clicked:', path, section);
+      console.log('Current router pathname:', router.pathname);
+      
+      // Update the section first
+      onSectionChange(section);
+      
+      // Then navigate
+      await router.push(path);
+      
+      console.log('Navigation completed to:', path);
+    } catch (error) {
+      console.error('Navigation error:', error);
+    }
+  };
+
   return (
     <div className="px-4 pb-4">
       <div className="bg-transparent bg-opacity-60 backdrop-blur-xl rounded-full border border-gray-500/30 shadow-2xl">
         <div className="flex items-center justify-center px-3 py-3">
           {/* Home */}
           <button 
-            onClick={() => onSectionChange("Home")}
+            onClick={() => handleNavigation("/", "Home")}
             className={`flex items-center justify-center px-7 py-3 rounded-full transition-all duration-200 ${
               selectedSection === "Home" 
                 ? 'bg-gray-600/60 text-white' 
@@ -26,7 +47,7 @@ export default function BottomNavigation({ selectedSection, onSectionChange }: B
 
           {/* Trade */}
           <button 
-            onClick={() => onSectionChange("Trade")}
+            onClick={() => handleNavigation("/trade", "Trade")}
             className={`flex items-center justify-center px-7 py-3 rounded-full transition-all duration-200 ${
               selectedSection === "Trade" 
                 ? 'bg-gray-600/60 text-white' 
@@ -42,7 +63,7 @@ export default function BottomNavigation({ selectedSection, onSectionChange }: B
 
           {/* Wallet */}
           <button 
-            onClick={() => onSectionChange("Wallet")}
+            onClick={() => handleNavigation("/wallet", "Wallet")}
             className={`flex items-center justify-center px-7 py-3 rounded-full transition-all duration-200 ${
               selectedSection === "Wallet" 
                 ? 'bg-gray-600/60 text-white' 
