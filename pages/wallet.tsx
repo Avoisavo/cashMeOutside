@@ -20,7 +20,7 @@ export default function Wallet() {
   const balance = {
     MYR: 43.00,
     USD: 12240.00,
-    KRW: 850000,
+    KRW: 8500,
     AUD: 1850.50
   };
 
@@ -95,7 +95,14 @@ export default function Wallet() {
       <div className="w-full overflow-x-auto scrollbar-hide">
         <div className="flex space-x-4 pb-2">
           {/* Current Currency Card */}
-          <div className="flex-shrink-0 w-72 bg-black bg-opacity-40 rounded-3xl p-8 backdrop-blur-sm border border-gray-600 relative overflow-hidden">
+          <div className="flex-shrink-0 w-72 bg-[#695E93] rounded-3xl p-8 backdrop-blur-sm border border-gray-600 relative overflow-hidden">
+            {/* Top-Up Plus Button */}
+            <button className="absolute top-6 right-6 w-10 h-10 bg-[#695E93] bg-opacity-20 rounded-full flex items-center justify-center shadow-lg border border-white border-opacity-30 hover:shadow-xl hover:scale-105 transition-all duration-200">
+              <svg className="w-5 h-5 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+
             <div className="flex items-center space-x-3 mb-6">
               <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center">
                 <img 
@@ -115,20 +122,51 @@ export default function Wallet() {
                 <span className="text-sm">·· {accountNumber}</span>
               </div>
               
-              <div className="text-4xl font-bold text-white">
+              <div className="text-2xl font-bold text-white">
                 {currentCurrency?.symbol}{currentBalance.toFixed(2)}
               </div>
             </div>
           </div>
-
-          {/* Add Another Currency Card */}
-          <div className="flex-shrink-0 w-48 bg-black bg-opacity-40 rounded-3xl p-6 backdrop-blur-sm border border-gray-600 flex flex-col items-center justify-center">
-            <button className="w-10 h-10 bg-black bg-opacity-40 rounded-full flex items-center justify-center backdrop-blur-sm border border-gray-600 hover:bg-opacity-60 transition-all mb-3">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          <div className="flex-shrink-0 w-72 bg-[#695E93] rounded-3xl p-8 backdrop-blur-sm border border-gray-600 relative overflow-hidden">
+            {/* Top-Up Plus Button */}
+            <button className="absolute top-6 right-6 w-10 h-10 bg-[#695E93] bg-opacity-20 rounded-full flex items-center justify-center shadow-lg border border-white border-opacity-30 hover:shadow-xl hover:scale-105 transition-all duration-200">
+              <svg className="w-5 h-5 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
               </svg>
             </button>
-            <span className="text-gray-300 text-xs text-center leading-tight">Add another currency account</span>
+
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center">
+                <img 
+                  src="https://flagcdn.com/w40/kr.png" 
+                  alt="KRW flag"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <span className="text-white font-bold text-base">KRW</span>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2 text-gray-300">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h3M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                <span className="text-sm">·· 75841</span>
+              </div>
+              
+              <div className="text-2xl font-bold text-white">
+                ₩{balance.KRW.toLocaleString()}
+              </div>
+            </div>
+          </div>
+          {/* Add Another Currency Card */}
+          <div className="flex-shrink-0 w-48 bg-[#695E93] bg-opacity-40 rounded-3xl p-6 backdrop-blur-sm border border-gray-600 flex flex-col items-center justify-center">
+            <button className="w-10 h-10 bg-[#695E93] bg-opacity-40 rounded-full flex items-center justify-center backdrop-blur-sm border border-white border-opacity-30 hover:shadow-xl hover:scale-105 transition-all duration-200 mb-3">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+            <span className="text-white-300 text-xs text-center leading-tight">Add another currency account</span>
           </div>
 
           {/* Spacer to ensure proper scrolling */}
@@ -141,7 +179,7 @@ export default function Wallet() {
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-white">Transactions</h2>
           <button className="text-gray-300 hover:text-white transition-colors">
-            <span className="text-sm underline">See all</span>
+            <span className="text-white-sm underline">See all</span>
           </button>
         </div>
 
