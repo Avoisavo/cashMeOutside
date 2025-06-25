@@ -186,13 +186,7 @@ export default function Trade() {
   };
 
   const handleContinueExchange = () => {
-    const queryParams = new URLSearchParams({
-      fromCurrency: fromCurrency,
-      toCurrency: toCurrency,
-      amount: amount,
-      rate: bestRate.toString()
-    });
-    router.push(`/exchange?${queryParams.toString()}`);
+    router.push('/exchange');
   };
 
   const formatNumber = (num: string) => {
@@ -247,9 +241,9 @@ export default function Trade() {
             </div>
             <span className="text-white font-bold text-lg">{fromCurrency}</span>
             <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
           
           {/* Amount Input */}
           <div className="flex-1 text-right ml-4">
@@ -288,9 +282,9 @@ export default function Trade() {
             </div>
             <span className="text-white font-bold text-lg">{toCurrency}</span>
             <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
           
           {/* Converted Amount */}
           <div className="flex-1 text-right ml-4">
@@ -323,12 +317,12 @@ export default function Trade() {
 
         {/* Savings Info */}
         {getSavings() > 0 && (
-          <div className="bg-yellow-100 rounded-2xl p-4">
-            <div className="text-center">
-              <div className="text-orange-600 font-bold text-lg">
+        <div className="bg-yellow-100 rounded-2xl p-4">
+          <div className="text-center">
+            <div className="text-orange-600 font-bold text-lg">
                 Save {getSavings().toFixed(2)} {toCurrency}
-              </div>
-              <div className="text-orange-600 text-sm">
+            </div>
+            <div className="text-orange-600 text-sm">
                 vs Traditional (Rate: {getTraditionalRate()})
               </div>
             </div>
@@ -391,7 +385,7 @@ export default function Trade() {
       </div>
     </div>
   );
-}
+} 
 
 const CurrencySelectionModal = ({ currencies, onSelect, onClose }: {
   currencies: { code: string, name: string, flag: string }[];

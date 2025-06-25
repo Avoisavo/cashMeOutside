@@ -27,7 +27,7 @@
     "fromCurrency": "MYR",
     "toCurrency": "KRW",
     "amount": 500,
-    "rate": 295,
+    "rate": 325,
     "timestamp": 1700000000000,
     "status": "matched",
     "balanceLocked": false
@@ -280,7 +280,7 @@
     "fromCurrency": "MYR",
     "toCurrency": "KRW",
     "amount": 1000,
-    "rate": 300.25,
+    "rate": 320,
     "timestamp": 1700000000000,
     "status": "open",
     "balanceLocked": false
@@ -291,7 +291,18 @@
     "fromCurrency": "MYR",
     "toCurrency": "KRW",
     "amount": 10,
-    "rate": 295,
+    "rate": 325,
+    "timestamp": 1700000000000,
+    "status": "open",
+    "balanceLocked": false
+  },
+  {
+    "id": "order_999",
+    "userId": "user_special",
+    "fromCurrency": "MYR",
+    "toCurrency": "KRW",
+    "amount": 1000,
+    "rate": 325.25,
     "timestamp": 1700000000000,
     "status": "open",
     "balanceLocked": false

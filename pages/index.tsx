@@ -47,6 +47,14 @@ export default function Home() {
     }
   ];
 
+  const traditionalRates = {
+    "MYR-KRW": 325.25,
+    "MYR-USD": 0.21,
+    "MYR-AUD": 0.32,
+    "USD-KRW": 1350,
+    "AUD-KRW": 900
+  };
+
   return (
     <>
       {/* Main Balance Card */}

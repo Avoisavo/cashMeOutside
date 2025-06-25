@@ -138,7 +138,7 @@ export class MatchingEngine {
           
           // Calculate the cost for the counter-party in their currency
           const counterPartyCost = liquidity / order.rate; // e.g., MYR liquidity / (MYR/KRW rate) = KRW cost
-
+          
           // Check if users have sufficient balance
           if (this.hasSufficientBalance(newOrder.userId, newOrder.fromCurrency, liquidity) &&
               this.hasSufficientBalance(order.userId, order.fromCurrency, counterPartyCost)) {
