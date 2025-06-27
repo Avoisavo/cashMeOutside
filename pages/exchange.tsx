@@ -108,14 +108,30 @@ export default function Exchange() {
     if (step === "confirm") {
       setStep("matches");
     } else {
-      router.back();
+    router.back();
     }
   };
 
   const confirmExchange = () => {
-    // Here you would implement the actual exchange logic
-    console.log("Confirming exchange with match:", selectedMatch);
-    // Navigate to success page or show confirmation
+    // Update wallet balances
+    const currentMYRBalance = parseFloat(localStorage.getItem('myrBalance') || '43.00');
+    const currentKRWBalance = parseFloat(localStorage.getItem('krwBalance') || '8500');
+    
+    // Deduct RM1000 from MYR
+    const newMYRBalance = currentMYRBalance - 1000;
+    
+    // Add 325,250 KRW (based on the selected match rate)
+    const selectedMatchIndex = matches.indexOf(selectedMatch!);
+    const exchangeRate = selectedMatchIndex === 0 ? 325.20 : 320.90;
+    const krwToAdd = 1000 * exchangeRate;
+    const newKRWBalance = currentKRWBalance + krwToAdd;
+    
+    // Save updated balances to localStorage
+    localStorage.setItem('myrBalance', newMYRBalance.toString());
+    localStorage.setItem('krwBalance', newKRWBalance.toString());
+    
+    // Navigate to wallet page to show updated balances
+    router.push('/wallet');
   };
 
   const renderMatchesStep = () => (
@@ -135,61 +151,91 @@ export default function Exchange() {
             <div className="text-gray-300 text-sm">
               Desired Rate: {desiredRate} {toCurrency}
             </div>
-          </div>
+        </div>
         )}
       </div>
       {/* Matches */}
-      <div className="space-y-3">
-        <h2 className="text-white font-semibold text-lg">Available P2P Matches</h2>
-        {matches.length === 0 ? (
-          <div className="bg-black bg-opacity-40 rounded-2xl p-6 backdrop-blur-sm text-center">
-            <p className="text-gray-300">No P2P matches found for this exchange.</p>
-            <p className="text-gray-400 text-sm mt-2">Try adjusting your amount or check back later.</p>
-          </div>
-        ) : (
-          matches.map((match, index) => {
-            const effectiveRate = calculateEffectiveRate(match);
-            const savings = getSavings(match);
-            const isSelected = selectedMatch === match;
-            return (
-              <div
-                key={index}
-                onClick={() => setSelectedMatch(match)}
-                className={`bg-black bg-opacity-40 rounded-2xl p-4 backdrop-blur-sm border-2 transition-all cursor-pointer ${
-                  isSelected
-                    ? "border-purple-500 bg-purple-500 bg-opacity-20"
-                    : "border-gray-600 hover:border-gray-500"
-                }`}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center space-x-3">
-                    <div className="text-2xl font-bold text-white">
-                      {effectiveRate.toFixed(2)}
-                    </div>
-                    <div className="text-gray-300 text-sm">{toCurrency}</div>
-                    {index === 0 && (
-                      <div className="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                        BEST
-                      </div>
-                    )}
-                  </div>
+        <div className="space-y-3">
+          <h2 className="text-white font-semibold text-lg">Available P2P Matches</h2>
+          {matches.length === 0 ? (
+            <div className="bg-black bg-opacity-40 rounded-2xl p-6 backdrop-blur-sm text-center">
+              <p className="text-gray-300">No P2P matches found for this exchange.</p>
+              <p className="text-gray-400 text-sm mt-2">Try adjusting your amount or check back later.</p>
+            </div>
+          ) : (
+            matches.map((match, index) => {
+              const effectiveRate = calculateEffectiveRate(match);
+              const savings = getSavings(match);
+              const isSelected = selectedMatch === match;
+              return (
+          <div
+                  key={index}
+                  onClick={() => setSelectedMatch(match)}
+            className={`bg-black bg-opacity-40 rounded-2xl p-4 backdrop-blur-sm border-2 transition-all cursor-pointer ${
+                    isSelected 
+                ? "border-purple-500 bg-purple-500 bg-opacity-20" 
+                : "border-gray-600 hover:border-gray-500"
+            }`}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-3">
+                <div className="text-2xl font-bold text-white">
+                        {effectiveRate.toFixed(2)}
                 </div>
-                <div className="flex items-center justify-between text-sm">
+                      <div className="text-gray-300 text-sm">{toCurrency}</div>
+                      {index === 0 && (
+                  <div className="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+                    BEST
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center justify-between text-sm">
                   <div className="text-gray-300">💰 {match.liquidity} {fromCurrency}</div>
                   <div className="text-gray-300">⏱️ {match.estimatedTime} min</div>
                   <div className="text-gray-300">📊 Score: {match.score.toFixed(1)}</div>
+                  </div>
                 </div>
-              </div>
-            );
-          })
-        )}
-      </div>
+              );
+            })
+          )}
+        </div>
+
+      {/* Transaction Details - Show when match is selected */}
       {selectedMatch && (
-        <button
+        <div className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 rounded-2xl p-4 backdrop-blur-sm">
+          <h3 className="text-white font-semibold mb-3">Transaction Details</h3>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between text-gray-300">
+              <span>Exchange Amount</span>
+              <span className="text-white">{amount} {fromCurrency}</span>
+            </div>
+            <div className="flex justify-between text-gray-300">
+              <span>Transaction Fee</span>
+              <span className="text-white">
+                {selectedMatch?.totalRate === 325.20 ? "RM1" : "RM0"}
+              </span>
+            </div>
+            <div className="flex justify-between text-gray-300">
+              <span>Exchange Rate</span>
+              <span className="text-white">{calculateEffectiveRate(selectedMatch).toFixed(2)} {toCurrency}</span>
+            </div>
+            <div className="flex justify-between text-gray-300">
+              <span>You'll Receive</span>
+              <span className="text-white font-semibold">
+                {(amount * calculateEffectiveRate(selectedMatch)).toFixed(2)} {toCurrency}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {selectedMatch && (
+        <button 
           onClick={handleContinue}
           className="w-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl py-4 font-bold text-white text-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg"
         >
-          Continue with Selected Match
+          Confirm Transaction
         </button>
       )}
     </div>
@@ -208,7 +254,7 @@ export default function Exchange() {
             <div className="text-center">
               <div className="text-2xl font-bold text-white mb-2">
                 {amount} {fromCurrency} → {toCurrency}
-              </div>
+                </div>
               <div className="text-green-400 font-semibold">
                 Rate: {effectiveRate.toFixed(2)} {toCurrency}
               </div>
@@ -217,12 +263,9 @@ export default function Exchange() {
               <div className="text-black-400 font-semibold text-center">
                 You'll receive {(amount * effectiveRate).toFixed(2)} {toCurrency}
               </div>
-              <div className="text-black-400 text-sm text-center mt-1">
-                +{savings.toFixed(2)} {toCurrency} vs traditional exchange
-              </div>
             </div>
           </div>
-        </div>
+      </div>
         {/* Exchange Path */}
         <div className="bg-black bg-opacity-40 rounded-2xl p-4 backdrop-blur-sm">
           <h3 className="text-white font-semibold mb-3">Exchange Path</h3>
@@ -233,25 +276,25 @@ export default function Exchange() {
                   Step {index + 1}: {order.fromCurrency} → {order.toCurrency}
                 </span>
                 <span className="text-white">Rate: {order.rate}</span>
-              </div>
+          </div>
             ))}
-          </div>
         </div>
-        {/* Security Notice */}
+      </div>
+      {/* Security Notice */}
         <div className="bg-black bg-opacity-40 rounded-2xl p-4 backdrop-blur-sm">
-          <div className="flex items-start space-x-3">
-            <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center mt-0.5">
-              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-white font-medium text-sm">Secure P2P Exchange</p>
-              <p className="text-gray-300 text-xs mt-1">Your funds are protected by escrow. Payment is only released after both parties confirm the transaction.</p>
-            </div>
+        <div className="flex items-start space-x-3">
+          <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center mt-0.5">
+            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-white font-medium text-sm">Secure P2P Exchange</p>
+            <p className="text-gray-300 text-xs mt-1">Your funds are protected by escrow. Payment is only released after both parties confirm the transaction.</p>
           </div>
         </div>
-        <button
+      </div>
+        <button 
           onClick={confirmExchange}
           className="w-full bg-gradient-to-r from-green-500 to-blue-500 rounded-xl py-4 font-bold text-white text-lg hover:from-green-600 hover:to-blue-600 transition-all duration-200 shadow-lg"
         >
@@ -265,14 +308,14 @@ export default function Exchange() {
     <div className="px-4 pb-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <button
+      <button 
           onClick={goBack}
           className="w-10 h-10 bg-black bg-opacity-40 rounded-full flex items-center justify-center backdrop-blur-sm"
-        >
+      >
           <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-        </button>
+      </button>
         <h1 className="text-xl font-bold text-white">
           {step === "matches" && "Choose P2P Match"}
           {step === "confirm" && "Confirm Exchange"}

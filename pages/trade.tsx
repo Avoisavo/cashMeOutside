@@ -225,7 +225,7 @@ export default function Trade() {
   return (
     <div className="px-4 pb-4">
       {/* Main Trade Card */}
-      <div className="bg-black bg-opacity-40 rounded-3xl p-6 backdrop-blur-sm space-y-6">
+      <div className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 rounded-3xl p-6 backdrop-blur-sm space-y-6">
         <h2 className="text-xl font-bold text-white text-center">Currency Exchange</h2>
         
         {/* From Currency Row */}
@@ -349,25 +349,6 @@ export default function Trade() {
 
       {/* Additional Info Cards */}
       <div className="mt-4 space-y-3">
-        {/* Transaction Details */}
-        <div className="bg-black bg-opacity-40 rounded-2xl p-4 backdrop-blur-sm">
-          <h3 className="text-white font-semibold mb-3">Transaction Details</h3>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between text-gray-300">
-              <span>Exchange Rate</span>
-              <span className="text-white">{bestRate.toFixed(2)} {toCurrency}</span>
-            </div>
-            <div className="flex justify-between text-gray-300">
-              <span>Fee</span>
-              <span className="text-white">{fromCurrency} 0.00</span>
-            </div>
-            <div className="flex justify-between text-gray-300">
-              <span>Processing Time</span>
-              <span className="text-white">1-2 minutes</span>
-            </div>
-          </div>
-        </div>
-
         {/* Security Notice */}
         <div className="bg-black bg-opacity-40 rounded-2xl p-4 backdrop-blur-sm">
           <div className="flex items-start space-x-3">

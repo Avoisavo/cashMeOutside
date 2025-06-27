@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 
 interface Transaction {
@@ -15,14 +15,24 @@ interface Transaction {
 export default function Wallet() {
   const router = useRouter();
   const selectedCurrency = "MYR";
-  
-  // Mock wallet data
-  const balance = {
+  const [balance, setBalance] = useState({
     MYR: 43.00,
     USD: 12240.00,
     KRW: 8500,
     AUD: 1850.50
-  };
+  });
+  
+  // Load balances from localStorage on component mount
+  useEffect(() => {
+    const myrBalance = parseFloat(localStorage.getItem('myrBalance') || '43.00');
+    const krwBalance = parseFloat(localStorage.getItem('krwBalance') || '8500');
+    
+    setBalance(prev => ({
+      ...prev,
+      MYR: myrBalance,
+      KRW: krwBalance
+    }));
+  }, []);
 
   const accountNumber = "90332";
   
