@@ -61,6 +61,22 @@ export default function BottomNavigation({ selectedSection, onSectionChange }: B
             </div>
           </button>
 
+          {/* Sell */}
+          <button 
+            onClick={() => handleNavigation("/sell", "Sell")}
+            className={`flex items-center justify-center px-7 py-3 rounded-full transition-all duration-200 ${
+              selectedSection === "Sell" 
+                ? 'bg-gray-600/60 text-white' 
+                : 'text-gray-400 hover:text-gray-300'
+            }`}
+          >
+            <div className="w-6 h-6">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-full h-full" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16 17l-4-4m0 0l4-4m-4 4H21" />
+              </svg>
+            </div>
+          </button>
+
           {/* Wallet */}
           <button 
             onClick={() => handleNavigation("/wallet", "Wallet")}
