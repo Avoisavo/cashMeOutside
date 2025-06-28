@@ -58,6 +58,31 @@ const mockRates: Record<string, number> = {
     "JPY/GBP": 0.0050,
 };
 
+// Mock active orders
+const activeOrders = [
+    {
+        id: 1,
+        pair: "KRW/MYR",
+        amount: 1000,
+        price: 0.003,
+        status: "Open"
+    },
+    {
+        id: 2,
+        pair: "USD/JPY",
+        amount: 200,
+        price: 156.5,
+        status: "Open"
+    },
+    {
+        id: 3,
+        pair: "AUD/GBP",
+        amount: 50,
+        price: 0.53,
+        status: "Open"
+    }
+];
+
 export default function Sell() {
     const router = useRouter();
     const [fromCurrency, setFromCurrency] = useState("KRW");
@@ -111,9 +136,12 @@ export default function Sell() {
     };
 
     return (
-        <div className="min-h-screen p-4 flex flex-col items-center">
+        <div className="min-h-0 p-4 flex flex-col items-center">
             <h2 className="text-xl font-bold mb-6 text-center text-white">Sell</h2>
-            <form onSubmit={handleSell} className="space-y-6 w-full max-w-md">
+            <form
+                onSubmit={handleSell}
+                className="flex flex-col justify-between w-full max-w-md min-h-[60vh]"
+            >
                 {/* Market Price Row */}
                 <div className="flex items-center justify-between text-gray-400 text-sm mb-2">
                     <span>Market price</span>
@@ -121,7 +149,7 @@ export default function Sell() {
                 </div>
 
                 {/* From Card */}
-                <div className="bg-gray-900 rounded-2xl p-4 -mb-2 flex flex-col relative">
+                <div className="bg-gray-900 rounded-2xl p-4 -mb-2 flex flex-col relative mb-2">
                     <div className="flex items-center justify-between mb-1">
                         <span className="text-gray-400 text-xs font-semibold">From</span>
                         <span className="text-gray-400 text-xs">Available Balance {mockBalances[fromCurrency].toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
@@ -187,7 +215,7 @@ export default function Sell() {
                 </div>
 
                 {/* To Card */}
-                <div className="bg-gray-900 rounded-2xl p-4 mb-2 flex flex-col relative">
+                <div className="bg-gray-900 rounded-2xl p-4 mb-2 flex flex-col relative mb-4">
                     <div className="flex items-center justify-between mb-1">
                         <span className="text-gray-400 text-xs font-semibold">To</span>
                         <span className="text-gray-400 text-xs">&nbsp;</span>
@@ -234,7 +262,7 @@ export default function Sell() {
                 </div>
 
                 {/* Price Card */}
-                <div className={`rounded-2xl p-4 mb-2 bg-gray-900`}>
+                <div className="rounded-2xl p-4 mb-4 bg-gray-900">
                     <div className="flex items-center justify-between mb-1">
                         <span className="text-gray-400 text-xs">When 1 {fromCurrency} is worth</span>
                     </div>
@@ -257,24 +285,34 @@ export default function Sell() {
                     )}
                 </div>
 
-                {/* Fee and Receive */}
-                <div className="flex items-center justify-between text-gray-300 text-sm mb-1">
-                    <span>Fee</span>
-                    <span className="text-green-400 font-mono">0 Fee</span>
+                <div className="mt-auto flex flex-col gap-2">
+                    {/* Fee and Receive */}
+                    <div className="flex items-center justify-between text-gray-300 text-sm mb-1">
+                        <span>Fee</span>
+                        <span className="text-green-400 font-mono">0 Fee</span>
+                    </div>
+                    <div className="flex items-center justify-between text-gray-300 text-sm mb-4">
+                        <span>Receive</span>
+                        <span className="text-white font-bold text-lg">{receiveAmount || '--'} {toCurrency}</span>
+                    </div>
+                    {/* Your Active Deals Section (single line) */}
+                    <div className="w-full max-w-md mt-4 mb-2">
+                        <div className="flex items-center justify-between">
+                            <span className="text-white font-semibold">Your active deals</span>
+                            <a href="/orders" className="text-yellow-400 text-xs font-semibold hover:underline flex items-center gap-1">
+                                View all <span aria-hidden>→</span>
+                            </a>
+                        </div>
+                    </div>
+                    {/* Place Order Button */}
+                    <button
+                        type="submit"
+                        disabled={!fromAmount || parseFloat(fromAmount) === 0}
+                        className="w-full bg-yellow-500 text-black font-bold py-3 rounded-xl shadow-lg hover:bg-yellow-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+                    >
+                        Sell
+                    </button>
                 </div>
-                <div className="flex items-center justify-between text-gray-300 text-sm mb-4">
-                    <span>Receive</span>
-                    <span className="text-white font-bold text-lg">{receiveAmount || '--'} {toCurrency}</span>
-                </div>
-
-                {/* Place Order Button */}
-                <button
-                    type="submit"
-                    disabled={!fromAmount || parseFloat(fromAmount) === 0}
-                    className="w-full bg-yellow-500 text-black font-bold py-3 rounded-xl shadow-lg hover:bg-yellow-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-lg"
-                >
-                    Place order
-                </button>
             </form>
         </div>
     );
