@@ -1,27 +1,22 @@
 import { useRouter } from "next/router";
 
-interface BottomNavigationProps {
-  selectedSection: string;
-  onSectionChange: (section: string) => void;
-}
-
-export default function BottomNavigation({ selectedSection, onSectionChange }: BottomNavigationProps) {
+export default function BottomNavigation() {
   const router = useRouter();
 
-  const handleNavigation = async (path: string, section: string) => {
-    try {
-      console.log('Navigation clicked:', path, section);
-      console.log('Current router pathname:', router.pathname);
-      
-      // Update the section first
-      onSectionChange(section);
-      
-      // Then navigate
+  // Map routes to section names
+  const sectionMap: Record<string, string> = {
+    "/": "Home",
+    "/trade": "Trade",
+    "/sell": "Sell",
+    "/wallet": "Wallet",
+  };
+
+  // Determine the current section based on the path
+  const selectedSection = sectionMap[router.pathname] || "";
+
+  const handleNavigation = async (path: string) => {
+    if (router.pathname !== path) {
       await router.push(path);
-      
-      console.log('Navigation completed to:', path);
-    } catch (error) {
-      console.error('Navigation error:', error);
     }
   };
 
@@ -31,7 +26,7 @@ export default function BottomNavigation({ selectedSection, onSectionChange }: B
         <div className="flex items-center justify-center px-3 py-3">
           {/* Home */}
           <button 
-            onClick={() => handleNavigation("/", "Home")}
+            onClick={() => handleNavigation("/")}
             className={`flex items-center justify-center px-7 py-3 rounded-full transition-all duration-200 ${
               selectedSection === "Home" 
                 ? 'bg-gray-600/60 text-white' 
@@ -47,7 +42,7 @@ export default function BottomNavigation({ selectedSection, onSectionChange }: B
 
           {/* Trade */}
           <button 
-            onClick={() => handleNavigation("/trade", "Trade")}
+            onClick={() => handleNavigation("/trade")}
             className={`flex items-center justify-center px-7 py-3 rounded-full transition-all duration-200 ${
               selectedSection === "Trade" 
                 ? 'bg-gray-600/60 text-white' 
@@ -63,7 +58,7 @@ export default function BottomNavigation({ selectedSection, onSectionChange }: B
 
           {/* Sell */}
           <button 
-            onClick={() => handleNavigation("/sell", "Sell")}
+            onClick={() => handleNavigation("/sell")}
             className={`flex items-center justify-center px-7 py-3 rounded-full transition-all duration-200 ${
               selectedSection === "Sell" 
                 ? 'bg-gray-600/60 text-white' 
@@ -72,14 +67,14 @@ export default function BottomNavigation({ selectedSection, onSectionChange }: B
           >
             <div className="w-6 h-6">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-full h-full" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M16 17l-4-4m0 0l4-4m-4 4H21" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
               </svg>
             </div>
           </button>
 
           {/* Wallet */}
           <button 
-            onClick={() => handleNavigation("/wallet", "Wallet")}
+            onClick={() => handleNavigation("/wallet")}
             className={`flex items-center justify-center px-7 py-3 rounded-full transition-all duration-200 ${
               selectedSection === "Wallet" 
                 ? 'bg-gray-600/60 text-white' 

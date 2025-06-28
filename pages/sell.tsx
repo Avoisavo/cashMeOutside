@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 
 const currencies = [
@@ -28,7 +28,34 @@ const mockRates: Record<string, number> = {
   "MYR/USD": 0.21,
   "AUD/MYR": 3.15,
   "MYR/AUD": 0.32,
-  // Add more as needed
+  "GBP/MYR": 6.0,
+  "MYR/GBP": 0.17,
+  "JPY/MYR": 0.032,
+  "MYR/JPY": 31.25,
+
+  "KRW/USD": 0.00074,
+  "USD/KRW": 1350,
+  "KRW/AUD": 0.0011,
+  "AUD/KRW": 900,
+  "KRW/GBP": 0.00057,
+  "GBP/KRW": 1750,
+  "KRW/JPY": 0.11,
+  "JPY/KRW": 9.1,
+
+  "USD/AUD": 1.48,
+  "AUD/USD": 0.68,
+  "USD/GBP": 0.79,
+  "GBP/USD": 1.27,
+  "USD/JPY": 156.5,
+  "JPY/USD": 0.0064,
+
+  "AUD/GBP": 0.53,
+  "GBP/AUD": 1.89,
+  "AUD/JPY": 105.7,
+  "JPY/AUD": 0.0095,
+
+  "GBP/JPY": 198.2,
+  "JPY/GBP": 0.0050,
 };
 
 export default function Sell() {
@@ -37,11 +64,18 @@ export default function Sell() {
   const [toCurrency, setToCurrency] = useState("MYR");
   const [fromAmount, setFromAmount] = useState("");
   const [fee] = useState(0); // Mock fee
-
-  // Calculate receive amount
   const rateKey = `${fromCurrency}/${toCurrency}`;
-  const rate = mockRates[rateKey] || 0;
-  const receiveAmount = fromAmount ? (parseFloat(fromAmount) * rate).toFixed(2) : "";
+  const defaultRate = mockRates[rateKey] || 0;
+  const [editableRate, setEditableRate] = useState(defaultRate);
+  const [showFromDropdown, setShowFromDropdown] = useState(false);
+  const [showToDropdown, setShowToDropdown] = useState(false);
+
+  // Update editableRate when currencies change
+  useEffect(() => {
+    setEditableRate(mockRates[`${fromCurrency}/${toCurrency}`] || 0);
+  }, [fromCurrency, toCurrency]);
+
+  const receiveAmount = fromAmount && editableRate ? (parseFloat(fromAmount) * editableRate).toFixed(2) : "";
 
   // Handle swap
   const handleSwap = () => {
@@ -62,101 +96,187 @@ export default function Sell() {
     setFromAmount("");
   };
 
-  return (
-    <div className="min-h-screen p-4 flex flex-col items-center">
-      <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-2xl mt-8">
-        <h2 className="text-white text-xl font-bold mb-6 text-center">Sell {fromCurrency}/{toCurrency}</h2>
-        <form onSubmit={handleSell} className="space-y-6">
-          {/* Rate Row */}
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-gray-300 font-medium">Rate</span>
-            <span className="bg-gray-800 text-white px-3 py-1 rounded-lg font-mono">{rate} {toCurrency}</span>
-          </div>
+  // Mock market price for warning
+  const marketPrice = mockRates[rateKey] || 0;
+  const isBelowMarket = editableRate < marketPrice;
 
-          {/* Exchange Box */}
-          <div className="bg-gray-900 rounded-xl p-4 mb-2">
-            {/* From Row */}
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <img src={currencies.find(c => c.code === fromCurrency)?.flag} alt={fromCurrency} className="w-7 h-5 rounded object-cover border border-gray-700" />
-                <select
-                  value={fromCurrency}
-                  onChange={e => setFromCurrency(e.target.value)}
-                  className="bg-transparent text-white font-bold text-lg appearance-none outline-none"
-                >
-                  {currencies.map(c => (
-                    <option key={c.code} value={c.code} className="text-black">{c.code}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min="0"
-                  value={fromAmount}
-                  onChange={e => setFromAmount(e.target.value)}
-                  placeholder="0"
-                  className="bg-transparent text-white text-lg font-bold text-right w-24 outline-none border-b border-white/20 focus:border-purple-400 transition-all"
-                />
-                <button type="button" onClick={handleMax} className="text-blue-400 text-xs font-semibold hover:underline">MAX</button>
-              </div>
-            </div>
-            <div className="text-gray-400 text-xs mb-2">{fromCurrency} Balance: {mockBalances[fromCurrency].toLocaleString(undefined, {maximumFractionDigits: 2})}</div>
-            {/* Swap Button */}
-            <div className="flex justify-center py-2">
-              <button 
+  // Dropdown handlers
+  const handleFromSelect = (code: string) => {
+    setFromCurrency(code);
+    setShowFromDropdown(false);
+  };
+  const handleToSelect = (code: string) => {
+    setToCurrency(code);
+    setShowToDropdown(false);
+  };
+
+  return (
+    <div className="min-h-screen p-4 flex flex-col items-center bg-black">
+      <h2 className="text-xl font-bold mb-6 text-center text-white">Limit Sell</h2>
+      <form onSubmit={handleSell} className="space-y-6 w-full max-w-md">
+        {/* Market Price Row */}
+        <div className="flex items-center justify-between text-gray-400 text-sm mb-2">
+          <span>Market price</span>
+          <span className="font-mono text-white">{marketPrice} {fromCurrency}/{toCurrency}</span>
+        </div>
+
+        {/* From Card */}
+        <div className="bg-gray-900 rounded-2xl p-4 mb-2 flex flex-col relative">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-gray-400 text-xs font-semibold">From</span>
+            <span className="text-gray-400 text-xs">Available Balance {mockBalances[fromCurrency].toLocaleString(undefined, {maximumFractionDigits: 2})}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="relative">
+              <button
                 type="button"
-                onClick={handleSwap}
-                className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors shadow-lg border-4 border-black"
-                aria-label="Swap currencies"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-transparent hover:bg-gray-700 transition-colors"
+                onClick={() => setShowFromDropdown((v) => !v)}
               >
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 17l4-4m0 0l-4-4m4 4H7m-4 4l4-4m0 0l-4-4m4 4h13" />
+                <img src={currencies.find(c => c.code === fromCurrency)?.flag} alt={fromCurrency} className="w-7 h-7 rounded-full object-cover" />
+                <span className="text-white font-bold text-lg">{fromCurrency}</span>
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
+              {showFromDropdown && (
+                <div className="absolute z-20 mt-2 w-48 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
+                  {currencies.map(c => (
+                    <button
+                      key={c.code}
+                      onClick={() => handleFromSelect(c.code)}
+                      className="flex items-center justify-between w-full px-4 py-2 hover:bg-gray-700 text-white rounded-xl gap-2"
+                    >
+                      <span className="flex items-center gap-2">
+                        <img src={c.flag} alt={c.code} className="w-6 h-6 rounded-full object-cover" />
+                        <span className="font-bold">{c.code}</span>
+                      </span>
+                      <span className="text-xs text-gray-400 font-mono">{mockBalances[c.code]?.toLocaleString(undefined, {maximumFractionDigits: 2})}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-            {/* To Row */}
-            <div className="flex items-center gap-2 mt-2">
-              <img src={currencies.find(c => c.code === toCurrency)?.flag} alt={toCurrency} className="w-7 h-5 rounded object-cover border border-gray-700" />
-              <select
-                value={toCurrency}
-                onChange={e => setToCurrency(e.target.value)}
-                className="bg-transparent text-white font-bold text-lg appearance-none outline-none"
-              >
-                {currencies.map(c => (
-                  <option key={c.code} value={c.code} className="text-black">{c.code}</option>
-                ))}
-              </select>
+            <div className="flex items-center gap-1">
               <input
-                type="text"
-                value={receiveAmount}
-                readOnly
-                placeholder="0"
-                className="bg-transparent text-white text-lg font-bold text-right w-24 outline-none border-b border-white/20"
+                type="number"
+                min="0"
+                value={fromAmount !== "" ? Number(fromAmount).toFixed(2) : ""}
+                onChange={e => setFromAmount(e.target.value)}
+                placeholder="0.00"
+                className="bg-transparent text-white text-lg font-bold text-right w-24 outline-none"
               />
+              <span className="text-gray-500">|</span>
+              <button type="button" onClick={handleMax} className="text-yellow-400 text-xs font-semibold hover:underline">Max</button>
             </div>
           </div>
+        </div>
 
-          {/* Rate, Fee, Receive */}
-          <div className="flex items-center justify-between text-gray-300 text-sm mb-1">
-            <span>1 {fromCurrency} ≈ {rate} {toCurrency}</span>
-            <span>Fee <span className="text-white font-mono">{fee}</span></span>
-          </div>
-          <div className="flex items-center justify-between text-gray-300 text-sm mb-4">
-            <span>Receive</span>
-            <span className="text-white font-bold text-lg">{receiveAmount} {toCurrency}</span>
-          </div>
-
-          {/* Sell Button */}
-          <button
-            type="submit"
-            disabled={!fromAmount || parseFloat(fromAmount) === 0}
-            className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white font-bold py-3 rounded-xl shadow-lg hover:from-purple-600 hover:to-blue-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        {/* Swap Button */}
+        <div className="flex justify-center -my-2 z-10 relative">
+          <button 
+            type="button"
+            onClick={handleSwap}
+            className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center hover:bg-yellow-600 transition-colors shadow-lg border-4 border-black"
+            aria-label="Swap currencies"
           >
-            Sell
+            <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16 17l-4-4m0 0l4-4m-4 4H21" />
+            </svg>
           </button>
-        </form>
-      </div>
+        </div>
+
+        {/* To Card */}
+        <div className="bg-gray-900 rounded-2xl p-4 mb-2 flex flex-col relative">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-gray-400 text-xs font-semibold">To</span>
+            <span className="text-gray-400 text-xs">&nbsp;</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="relative">
+              <button
+                type="button"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-transparent hover:bg-gray-700 transition-colors"
+                onClick={() => setShowToDropdown((v) => !v)}
+              >
+                <img src={currencies.find(c => c.code === toCurrency)?.flag} alt={toCurrency} className="w-7 h-7 rounded-full object-cover" />
+                <span className="text-white font-bold text-lg">{toCurrency}</span>
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {showToDropdown && (
+                <div className="absolute z-20 mt-2 w-48 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
+                  {currencies.map(c => (
+                    <button
+                      key={c.code}
+                      onClick={() => handleToSelect(c.code)}
+                      className="flex items-center justify-between w-full px-4 py-2 hover:bg-gray-700 text-white rounded-xl gap-2"
+                    >
+                      <span className="flex items-center gap-2">
+                        <img src={c.flag} alt={c.code} className="w-6 h-6 rounded-full object-cover" />
+                        <span className="font-bold">{c.code}</span>
+                      </span>
+                      <span className="text-xs text-gray-400 font-mono">{mockBalances[c.code]?.toLocaleString(undefined, {maximumFractionDigits: 2})}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <input
+              type="text"
+              value={receiveAmount}
+              readOnly
+              placeholder="0"
+              className="bg-transparent text-white text-lg font-bold text-right w-32 outline-none"
+            />
+          </div>
+        </div>
+
+        {/* Price Card */}
+        <div className={`rounded-2xl p-4 mb-2 border ${isBelowMarket ? 'border-red-500 bg-red-900/20' : 'border-white/20 bg-gray-900'}`}>
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-gray-400 text-xs">When 1 {fromCurrency} is worth</span>
+            <span className="text-gray-400 text-xs">Expired in 30D</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-white font-bold text-lg">{toCurrency}</span>
+            <input
+              type="number"
+              name="exchangeRate"
+              value={editableRate}
+              onChange={e => setEditableRate(Number(e.target.value))}
+              placeholder="0.00"
+              step="0.0001"
+              className="bg-transparent text-white text-2xl font-bold text-right w-32 outline-none border-b border-white/20 focus:border-yellow-400 transition-all"
+            />
+          </div>
+          {isBelowMarket && (
+            <div className="text-red-400 text-xs mt-2">
+              Your selling price is lower than the current market price. Please adjust it to avoid any losses.
+            </div>
+          )}
+        </div>
+
+        {/* Fee and Receive */}
+        <div className="flex items-center justify-between text-gray-300 text-sm mb-1">
+          <span>Fee</span>
+          <span className="text-green-400 font-mono">0 Fee</span>
+        </div>
+        <div className="flex items-center justify-between text-gray-300 text-sm mb-4">
+          <span>Receive</span>
+          <span className="text-white font-bold text-lg">{receiveAmount || '--'} {toCurrency}</span>
+        </div>
+
+        {/* Place Order Button */}
+        <button
+          type="submit"
+          disabled={!fromAmount || parseFloat(fromAmount) === 0}
+          className="w-full bg-yellow-500 text-black font-bold py-3 rounded-xl shadow-lg hover:bg-yellow-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+        >
+          Place order
+        </button>
+      </form>
     </div>
   );
 } 
