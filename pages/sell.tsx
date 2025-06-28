@@ -117,6 +117,18 @@ export default function Sell() {
     // Handle sell
     const handleSell = (e: React.FormEvent) => {
         e.preventDefault();
+        const order = {
+            fromCurrency,
+            toCurrency,
+            fromAmount,
+            rate: editableRate,
+            receiveAmount,
+            date: new Date().toISOString(),
+        };
+        // Get existing orders
+        const existing = JSON.parse(localStorage.getItem("activeSellOrders") || "[]");
+        // Add new order
+        localStorage.setItem("activeSellOrders", JSON.stringify([order, ...existing]));
         alert(`Sell order placed: ${fromAmount} ${fromCurrency} for ${receiveAmount} ${toCurrency}`);
         setFromAmount("");
     };
@@ -298,8 +310,8 @@ export default function Sell() {
                     {/* Your Active Deals Section (single line) */}
                     <div className="w-full max-w-md mt-4 mb-2">
                         <div className="flex items-center justify-between">
-                            <span className="text-white font-semibold">Your active deals</span>
-                            <a href="/orders" className="text-yellow-400 text-xs font-semibold hover:underline flex items-center gap-1">
+                            <span className="text-white font-semibold">Your active sell</span>
+                            <a href="/active-sell" className="text-yellow-400 text-xs font-semibold hover:underline flex items-center gap-1">
                                 View all <span aria-hidden>→</span>
                             </a>
                         </div>
