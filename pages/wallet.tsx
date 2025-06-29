@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import { currencies, mockBalances } from '../data/balances';
 
 interface Transaction {
   id: string;
@@ -24,26 +25,39 @@ export default function Wallet() {
     "JPY": 100000
   });
 
-  const currencies = [
-    { code: "MYR", symbol: "RM", flag: "https://flagcdn.com/w40/my.png" },
-    { code: "USD", symbol: "$", flag: "https://flagcdn.com/w40/us.png" },
-    { code: "KRW", symbol: "₩", flag: "https://flagcdn.com/w40/kr.png" },
-    { code: "AUD", symbol: "A$", flag: "https://flagcdn.com/w40/au.png" },
-    { code: "GBP", symbol: "£", flag: "https://flagcdn.com/w40/gb.png" },
-    { code: "JPY", symbol: "¥", flag: "https://flagcdn.com/w40/jp.png" },
-  ];
-
   // Load balances from localStorage or fallback to mock
   useEffect(() => {
-    const newBalances: any = { ...balance };
-    currencies.forEach((c) => {
-      const key = c.code.toLowerCase() + "Balance";
-      const stored = localStorage.getItem(key);
-      if (stored !== null) {
-        newBalances[c.code] = parseFloat(stored);
-      }
-    });
-    setBalance((prev) => ({ ...prev, ...newBalances }));
+    const updateBalances = () => {
+      const newBalances: any = { ...mockBalances };
+      currencies.forEach((c) => {
+        const key = c.code + "Balance";
+        const stored = localStorage.getItem(key);
+        if (stored !== null) {
+          newBalances[c.code] = parseFloat(stored);
+        }
+      });
+      setBalance(newBalances);
+    };
+
+    updateBalances();
+    window.addEventListener('focus', updateBalances);
+    return () => window.removeEventListener('focus', updateBalances);
+  }, []);
+
+  // Calculate amounts under sell orders for each currency
+  const [sellOrderAmounts, setSellOrderAmounts] = useState<Record<string, number>>({});
+  useEffect(() => {
+    const ordersRaw = localStorage.getItem('activeSellOrders');
+    if (ordersRaw) {
+      const orders = JSON.parse(ordersRaw);
+      const amounts: Record<string, number> = {};
+      orders.forEach((order: any) => {
+        if (order.fromCurrency && order.fromAmount) {
+          amounts[order.fromCurrency] = (amounts[order.fromCurrency] || 0) + parseFloat(order.fromAmount);
+        }
+      });
+      setSellOrderAmounts(amounts);
+    }
   }, []);
 
   const accountNumber = "90332";
@@ -162,6 +176,9 @@ export default function Wallet() {
                 <div className="text-2xl font-bold text-white">
                   {c.symbol}{(balance[c.code] ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </div>
+                {sellOrderAmounts[c.code] > 0 && (
+                  <div className="text-xs text-yellow-300 mt-1">In Sell Orders: {sellOrderAmounts[c.code].toLocaleString(undefined, { maximumFractionDigits: 2 })} {c.code}</div>
+                )}
               </div>
             </div>
           ))}

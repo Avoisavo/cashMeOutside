@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import { currencies, mockBalances } from '../data/balances';
 
 interface Order {
   id: string;
@@ -28,15 +29,6 @@ export default function Trade() {
   const [showFromDropdown, setShowFromDropdown] = useState(false);
   const [showToDropdown, setShowToDropdown] = useState(false);
 
-  const currencies = [
-    { code: "MYR", name: "Malaysian Ringgit", flag: "https://flagcdn.com/w40/my.png" },
-    { code: "KRW", name: "South Korean Won", flag: "https://flagcdn.com/w40/kr.png" },
-    { code: "USD", name: "US Dollar", flag: "https://flagcdn.com/w40/us.png" },
-    { code: "AUD", name: "Australian Dollar", flag: "https://flagcdn.com/w40/au.png" },
-    { code: "GBP", name: "British Pound", flag: "https://flagcdn.com/w40/gb.png" },
-    { code: "JPY", name: "Japanese Yen", flag: "https://flagcdn.com/w40/jp.png" }
-  ];
-
   // Traditional rates for comparison
   const traditionalRates = {
     "MYR-KRW": 295,
@@ -44,15 +36,6 @@ export default function Trade() {
     "MYR-AUD": 0.32,
     "USD-KRW": 1350,
     "AUD-KRW": 900
-  };
-
-  const mockBalances: Record<string, number> = {
-    "MYR": 5000,
-    "KRW": 5000000,
-    "USD": 1200,
-    "AUD": 800,
-    "GBP": 400,
-    "JPY": 100000
   };
 
   useEffect(() => {

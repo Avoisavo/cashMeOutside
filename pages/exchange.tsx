@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import { mockBalances } from '../data/balances';
 
 interface Order {
   id: string;
@@ -11,6 +12,7 @@ interface Order {
   timestamp: number;
   status: string;
   balanceLocked: boolean;
+  orderNo: string;
 }
 
 interface Match {
@@ -67,6 +69,7 @@ export default function Exchange() {
           timestamp: Date.now(),
           status: "open",
           balanceLocked: false,
+          orderNo: "1",
         },
       ],
       totalRate: 325.20,
@@ -86,6 +89,7 @@ export default function Exchange() {
           timestamp: Date.now(),
           status: "open",
           balanceLocked: false,
+          orderNo: "2",
         },
       ],
       totalRate: 320.90,
@@ -153,11 +157,11 @@ export default function Exchange() {
     const receiveAmount = actualAmount * effectiveRate;
     const finalReceive = receiveAmount - feeInTarget;
 
-    // Get balances from localStorage, fallback to 0
-    const fromKey = intent.fromCurrency.toLowerCase() + "Balance";
-    const toKey = intent.toCurrency.toLowerCase() + "Balance";
-    const currentFromBalance = parseFloat(localStorage.getItem(fromKey) || "0");
-    const currentToBalance = parseFloat(localStorage.getItem(toKey) || "0");
+    // Use the same key format as wallet/sell
+    const fromKey = intent.fromCurrency + "Balance";
+    const toKey = intent.toCurrency + "Balance";
+    const currentFromBalance = parseFloat(localStorage.getItem(fromKey) || mockBalances[intent.fromCurrency].toString());
+    const currentToBalance = parseFloat(localStorage.getItem(toKey) || mockBalances[intent.toCurrency].toString());
 
     // Update balances
     const newFromBalance = currentFromBalance - actualAmount;
@@ -165,6 +169,35 @@ export default function Exchange() {
 
     localStorage.setItem(fromKey, newFromBalance.toString());
     localStorage.setItem(toKey, newToBalance.toString());
+
+    // Update the relevant sell order in localStorage
+    const ordersRaw = localStorage.getItem('activeSellOrders');
+    if (ordersRaw) {
+      const orders = JSON.parse(ordersRaw);
+      // Use orderNo for robust matching
+      const orderIdx = orders.findIndex(
+        (o: any) => o.orderNo === selectedOrder.orderNo
+      );
+      if (orderIdx !== -1) {
+        const order = orders[orderIdx];
+        order.fromAmount = (Number(order.fromAmount) - actualAmount).toString();
+        if (!order.buyers) order.buyers = [];
+        order.buyers.push({
+          name: 'Buyer',
+          amount: actualAmount,
+          date: new Date().toISOString(),
+        });
+        if (Number(order.fromAmount) <= 0) {
+          // Move to completedSellOrders
+          const completedRaw = localStorage.getItem('completedSellOrders');
+          const completed = completedRaw ? JSON.parse(completedRaw) : [];
+          completed.push(order);
+          localStorage.setItem('completedSellOrders', JSON.stringify(completed));
+          orders.splice(orderIdx, 1);
+        }
+        localStorage.setItem('activeSellOrders', JSON.stringify(orders));
+      }
+    }
 
     // Navigate to wallet page to show updated balances
     router.push('/wallet');

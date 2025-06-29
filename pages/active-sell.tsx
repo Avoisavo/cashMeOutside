@@ -13,6 +13,12 @@ type SellOrder = {
   buyers?: Buyer[];
 };
 
+type Buyer = {
+  name: string;
+  amount: number;
+  date: string;
+};
+
 export default function ActiveSell() {
     const [orders, setOrders] = useState<SellOrder[]>([]);
     const [expanded, setExpanded] = useState<number|null>(null);
@@ -71,11 +77,14 @@ export default function ActiveSell() {
                                 </div>
                                 {expanded === idx && (
                                     <div className="mt-2 bg-gray-800 rounded p-2">
-                                        <div className="font-semibold text-white mb-1">Buyers:</div>
+                                        <div className="font-semibold text-white mb-1">Transaction:</div>
                                         {(order.buyers || []).map((buyer, i) => (
                                             <div key={i} className="flex justify-between text-gray-300 text-sm">
                                                 <span>{buyer.name}</span>
-                                                <span>{buyer.amount.toLocaleString()} {order.fromCurrency}</span>
+                                                <span>
+                                                  {buyer.amount.toLocaleString()} {order.toCurrency}
+                                                  <span className="ml-2 text-xs text-gray-500">{new Date(buyer.date).toLocaleString()}</span>
+                                                </span>
                                             </div>
                                         ))}
                                     </div>

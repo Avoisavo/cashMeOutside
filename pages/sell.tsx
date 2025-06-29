@@ -1,25 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import toast, { Toaster } from 'react-hot-toast';
-
-const currencies = [
-    { code: "MYR", name: "Malaysian Ringgit", flag: "https://flagcdn.com/w40/my.png" },
-    { code: "KRW", name: "South Korean Won", flag: "https://flagcdn.com/w40/kr.png" },
-    { code: "USD", name: "US Dollar", flag: "https://flagcdn.com/w40/us.png" },
-    { code: "AUD", name: "Australian Dollar", flag: "https://flagcdn.com/w40/au.png" },
-    { code: "GBP", name: "British Pound", flag: "https://flagcdn.com/w40/gb.png" },
-    { code: "JPY", name: "Japanese Yen", flag: "https://flagcdn.com/w40/jp.png" }
-];
-
-// Mock balances
-const mockBalances: Record<string, number> = {
-    "MYR": 5000,
-    "KRW": 5000000,
-    "USD": 1200,
-    "AUD": 800,
-    "GBP": 400,
-    "JPY": 100000
-};
+import { currencies, mockBalances } from '../data/balances';
 
 // Mock rates (1 FROM = X TO)
 const mockRates: Record<string, number> = {
@@ -133,6 +115,11 @@ export default function Sell() {
         const existing = JSON.parse(localStorage.getItem("activeSellOrders") || "[]");
         // Add new order
         localStorage.setItem("activeSellOrders", JSON.stringify([order, ...existing]));
+        // Deduct from balance
+        const key = fromCurrency + "Balance";
+        const prev = parseFloat(localStorage.getItem(key) || mockBalances[fromCurrency].toString());
+        const newBalance = prev - parseFloat(fromAmount);
+        localStorage.setItem(key, newBalance.toString());
         toast.success(`Sell order placed: ${fromAmount} ${fromCurrency} for ${receiveAmount} ${toCurrency}`);
         setFromAmount("");
     };
