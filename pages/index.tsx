@@ -2,7 +2,6 @@ import { useRouter } from "next/router";
 import Head from "next/head";
 import { useEffect } from "react";
 
-// Reusable FeatureCard component
 interface FeatureCardProps {
   icon: string;
   title: string;
@@ -18,6 +17,33 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description }) =
     <p className="text-purple-200 text-base text-center leading-relaxed">
       {description}
     </p>
+  </div>
+);
+
+interface BenefitCardProps {
+  icon: string;
+  title: string;
+  description: string;
+}
+
+const BenefitCard: React.FC<BenefitCardProps> = ({ icon, title, description }) => (
+  <div className="bg-black bg-opacity-5 backdrop-blur-lg rounded-3xl p-6 shadow-xl hover:bg-opacity-10 transition-all duration-300">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+      {/* Icon Container */}
+      <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
+        <span className="text-2xl" role="img" aria-label={title}>{icon}</span>
+      </div>
+      
+      {/* Content */}
+      <div className="flex-1">
+        <h3 className="text-xl font-semibold text-white mb-2">
+          {title}
+        </h3>
+        <p className="text-purple-200 text-base leading-relaxed">
+          {description}
+        </p>
+      </div>
+    </div>
   </div>
 );
 
@@ -278,14 +304,14 @@ export default function Landing() {
             </div>
           </section>
 
-          {/* Benefits */}
-          <section className="max-w-3xl mx-auto py-12 px-4">
+          {/* Benefits - New Design */}
+          <section className="max-w-4xl mx-auto py-12 px-4">
             <h2 className="text-2xl md:text-3xl font-bold text-white mb-12 text-center">
               Why CashMeOutside?
             </h2>
-            <div className="space-y-6">
+            <div className="space-y-4">
               {benefitsFeatures.map((feature, index) => (
-                <FeatureCard
+                <BenefitCard
                   key={index}
                   icon={feature.icon}
                   title={feature.title}
@@ -301,7 +327,6 @@ export default function Landing() {
               What Our Users Say
             </h2>
             
-            {/* Mobile: Horizontal scroll, Desktop: Grid */}
             <div className="md:grid md:grid-cols-2 md:gap-6 flex overflow-x-auto gap-6 pb-4 scrollbar-hide snap-x snap-mandatory md:overflow-visible">
               <div className="flex-shrink-0 w-80 md:w-auto bg-black bg-opacity-40 rounded-2xl p-6 shadow-lg snap-center">
                 <p className="text-purple-100 italic mb-4">
@@ -309,12 +334,11 @@ export default function Landing() {
                   minutes. Amazing!"
                 </p>
                 <div className="flex items-center space-x-3">
-                  <img
-                    src="https://randomuser.me/api/portraits/men/32.jpg"
-                    className="w-10 h-10 rounded-full object-cover"
-                    alt="Min-jun K. - CashMeOutside user"
-                    loading="lazy"
-                  />
+                <img
+                  src="https://randomuser.me/api/portraits/men/32.jpg"
+                  className="w-10 h-10 rounded-full object-cover"
+                  alt="User"
+                />
                   <span className="text-white font-semibold">Min-jun K.</span>
                 </div>
               </div>
@@ -325,11 +349,10 @@ export default function Landing() {
                 </p>
                 <div className="flex items-center space-x-3">
                   <img
-                    src="https://randomuser.me/api/portraits/women/44.jpg"
-                    className="w-10 h-10 rounded-full object-cover"
-                    alt="Siti N. - CashMeOutside user"
-                    loading="lazy"
-                  />
+                  src="https://randomuser.me/api/portraits/women/44.jpg"
+                  className="w-10 h-10 rounded-full object-cover"
+                  alt="User"
+                />
                   <span className="text-white font-semibold">Siti N.</span>
                 </div>
               </div>
