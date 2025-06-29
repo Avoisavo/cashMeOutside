@@ -176,189 +176,191 @@ export default function Sell() {
 
     return (
         <div className="min-h-0 p-4 flex flex-col items-center">
-            <h2 className="text-xl font-bold mb-6 text-center text-white">Sell</h2>
-            <Toaster position="bottom-center" containerClassName="!static" />
-            <form
-                onSubmit={handleSell}
-                className="flex flex-col justify-between w-full max-w-md min-h-[60vh]"
-            >
-                {/* Market Price Row */}
-                <div className="flex items-center justify-between text-gray-400 text-sm mb-2">
-                    <span>Market price</span>
-                    <span className="font-mono text-white">{marketPrice} {fromCurrency}/{toCurrency}</span>
-                </div>
-
-                {/* From Card */}
-                <div className="bg-gray-900 rounded-2xl p-4 -mb-2 flex flex-col relative mb-2">
-                    <div className="flex items-center justify-between mb-1">
-                        <span className="text-gray-400 text-xs font-semibold">From</span>
-                        <span className="text-gray-400 text-xs">Available Balance {getBalance(fromCurrency).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+            <div className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 rounded-3xl p-6 backdrop-blur-sm space-y-6 w-full max-w-md">
+                <h2 className="text-xl font-bold mb-6 text-center text-white">Sell</h2>
+                <Toaster position="bottom-center" containerClassName="!static" />
+                <form
+                    onSubmit={handleSell}
+                    className="flex flex-col justify-between min-h-[60vh]"
+                >
+                    {/* Market Price Row */}
+                    <div className="flex items-center justify-between text-gray-400 text-sm mb-2">
+                        <span>Market price</span>
+                        <span className="font-mono text-white">{marketPrice} {fromCurrency}/{toCurrency}</span>
                     </div>
-                    <div className="flex items-center justify-between">
-                        <div className="relative">
-                            <button
-                                type="button"
-                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-transparent hover:bg-gray-700 transition-colors"
-                                onClick={() => setShowFromDropdown((v) => !v)}
-                            >
-                                <img src={currencies.find(c => c.code === fromCurrency)?.flag} alt={fromCurrency} className="w-7 h-7 rounded-full object-cover" />
-                                <span className="text-white font-bold text-lg">{fromCurrency}</span>
-                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-                            {showFromDropdown && (
-                                <div className="absolute z-20 mt-2 w-48 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
-                                    {currencies.map(c => (
-                                        <button
-                                            key={c.code}
-                                            onClick={() => handleFromSelect(c.code)}
-                                            className="flex items-center justify-between w-full px-4 py-2 hover:bg-gray-700 text-white rounded-xl gap-2"
-                                        >
-                                            <span className="flex items-center gap-2">
-                                                <img src={c.flag} alt={c.code} className="w-6 h-6 rounded-full object-cover" />
-                                                <span className="font-bold">{c.code}</span>
-                                            </span>
-                                            <span className="text-xs text-gray-400 font-mono">{getBalance(c.code).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
+
+                    {/* From Card */}
+                    <div className="bg-gray-900 rounded-2xl p-4 -mb-2 flex flex-col relative mb-2">
+                        <div className="flex items-center justify-between mb-1">
+                            <span className="text-gray-400 text-xs font-semibold">From</span>
+                            <span className="text-gray-400 text-xs">Available Balance {getBalance(fromCurrency).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                         </div>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center justify-between">
+                            <div className="relative">
+                                <button
+                                    type="button"
+                                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-transparent hover:bg-gray-700 transition-colors"
+                                    onClick={() => setShowFromDropdown((v) => !v)}
+                                >
+                                    <img src={currencies.find(c => c.code === fromCurrency)?.flag} alt={fromCurrency} className="w-7 h-7 rounded-full object-cover" />
+                                    <span className="text-white font-bold text-lg">{fromCurrency}</span>
+                                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                {showFromDropdown && (
+                                    <div className="absolute z-20 mt-2 w-48 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
+                                        {currencies.map(c => (
+                                            <button
+                                                key={c.code}
+                                                onClick={() => handleFromSelect(c.code)}
+                                                className="flex items-center justify-between w-full px-4 py-2 hover:bg-gray-700 text-white rounded-xl gap-2"
+                                            >
+                                                <span className="flex items-center gap-2">
+                                                    <img src={c.flag} alt={c.code} className="w-6 h-6 rounded-full object-cover" />
+                                                    <span className="font-bold">{c.code}</span>
+                                                </span>
+                                                <span className="text-xs text-gray-400 font-mono">{getBalance(c.code).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="flex items-center gap-1">
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={fromAmount !== "" ? Number(fromAmount).toFixed(2) : ""}
+                                    onChange={e => setFromAmount(e.target.value)}
+                                    placeholder="0.00"
+                                    className="bg-transparent text-white text-lg font-bold text-right w-24 outline-none"
+                                />
+                                <span className="text-gray-500">|</span>
+                                <button type="button" onClick={handleMax} className="text-blue-400 text-xs font-semibold hover:underline">Max</button>
+                            </div>
+                        </div>
+                        {insufficientBalance && (
+                            <div className="text-red-400 text-xs mt-1">
+                                Insufficient balance
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Swap Button */}
+                    <div className="flex justify-center -my-4 z-10 relative">
+                        <button
+                            type="button"
+                            onClick={handleSwap}
+                            className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors shadow-lg border-4 border-black"
+                            aria-label="Swap currencies"
+                        >
+                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    {/* To Card */}
+                    <div className="bg-gray-900 rounded-2xl p-4 mb-2 flex flex-col relative mb-4">
+                        <div className="flex items-center justify-between mb-1">
+                            <span className="text-gray-400 text-xs font-semibold">To</span>
+                            <span className="text-gray-400 text-xs">&nbsp;</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <div className="relative">
+                                <button
+                                    type="button"
+                                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-transparent hover:bg-gray-700 transition-colors"
+                                    onClick={() => setShowToDropdown((v) => !v)}
+                                >
+                                    <img src={currencies.find(c => c.code === toCurrency)?.flag} alt={toCurrency} className="w-7 h-7 rounded-full object-cover" />
+                                    <span className="text-white font-bold text-lg">{toCurrency}</span>
+                                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                {showToDropdown && (
+                                    <div className="absolute z-20 mt-2 w-48 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
+                                        {currencies.map(c => (
+                                            <button
+                                                key={c.code}
+                                                onClick={() => handleToSelect(c.code)}
+                                                className="flex items-center justify-between w-full px-4 py-2 hover:bg-gray-700 text-white rounded-xl gap-2"
+                                            >
+                                                <span className="flex items-center gap-2">
+                                                    <img src={c.flag} alt={c.code} className="w-6 h-6 rounded-full object-cover" />
+                                                    <span className="font-bold">{c.code}</span>
+                                                </span>
+                                                <span className="text-xs text-gray-400 font-mono">{getBalance(c.code).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                            <input
+                                type="text"
+                                value={receiveAmount}
+                                readOnly
+                                placeholder="0"
+                                className="bg-transparent text-white text-lg font-bold text-right w-32 outline-none"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Price Card */}
+                    <div className="rounded-2xl p-4 mb-4 bg-gray-900">
+                        <div className="flex items-center justify-between mb-1">
+                            <span className="text-gray-400 text-xs">When 1 {fromCurrency} is worth</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <span className="text-white font-bold text-lg">{toCurrency}</span>
                             <input
                                 type="number"
-                                min="0"
-                                value={fromAmount !== "" ? Number(fromAmount).toFixed(2) : ""}
-                                onChange={e => setFromAmount(e.target.value)}
+                                name="exchangeRate"
+                                value={editableRate}
+                                onChange={e => setEditableRate(Number(e.target.value))}
                                 placeholder="0.00"
-                                className="bg-transparent text-white text-lg font-bold text-right w-24 outline-none"
+                                step="0.0001"
+                                className="bg-transparent text-white text-2xl font-bold text-right w-32 outline-none transition-all"
                             />
-                            <span className="text-gray-500">|</span>
-                            <button type="button" onClick={handleMax} className="text-yellow-400 text-xs font-semibold hover:underline">Max</button>
                         </div>
+                        {isBelowMarket && (
+                            <div className="text-red-400 text-xs mt-2">
+                                Your selling price is lower than the current market price. Please adjust it to avoid any losses.
+                            </div>
+                        )}
                     </div>
-                    {insufficientBalance && (
-                        <div className="text-red-400 text-xs mt-1">
-                            Insufficient balance
-                        </div>
-                    )}
-                </div>
 
-                {/* Swap Button */}
-                <div className="flex justify-center -my-4 z-10 relative">
-                    <button
-                        type="button"
-                        onClick={handleSwap}
-                        className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center hover:bg-yellow-600 transition-colors shadow-lg border-4 border-black"
-                        aria-label="Swap currencies"
-                    >
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-                        </svg>
-                    </button>
-                </div>
-
-                {/* To Card */}
-                <div className="bg-gray-900 rounded-2xl p-4 mb-2 flex flex-col relative mb-4">
-                    <div className="flex items-center justify-between mb-1">
-                        <span className="text-gray-400 text-xs font-semibold">To</span>
-                        <span className="text-gray-400 text-xs">&nbsp;</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                        <div className="relative">
-                            <button
-                                type="button"
-                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-transparent hover:bg-gray-700 transition-colors"
-                                onClick={() => setShowToDropdown((v) => !v)}
-                            >
-                                <img src={currencies.find(c => c.code === toCurrency)?.flag} alt={toCurrency} className="w-7 h-7 rounded-full object-cover" />
-                                <span className="text-white font-bold text-lg">{toCurrency}</span>
-                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-                            {showToDropdown && (
-                                <div className="absolute z-20 mt-2 w-48 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
-                                    {currencies.map(c => (
-                                        <button
-                                            key={c.code}
-                                            onClick={() => handleToSelect(c.code)}
-                                            className="flex items-center justify-between w-full px-4 py-2 hover:bg-gray-700 text-white rounded-xl gap-2"
-                                        >
-                                            <span className="flex items-center gap-2">
-                                                <img src={c.flag} alt={c.code} className="w-6 h-6 rounded-full object-cover" />
-                                                <span className="font-bold">{c.code}</span>
-                                            </span>
-                                            <span className="text-xs text-gray-400 font-mono">{getBalance(c.code).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
+                    <div className="mt-auto flex flex-col gap-2">
+                        {/* Fee and Receive */}
+                        <div className="flex items-center justify-between text-gray-300 text-sm mb-1">
+                            <span>Fee</span>
+                            <span className="font-mono">0 Fee</span>
                         </div>
-                        <input
-                            type="text"
-                            value={receiveAmount}
-                            readOnly
-                            placeholder="0"
-                            className="bg-transparent text-white text-lg font-bold text-right w-32 outline-none"
-                        />
-                    </div>
-                </div>
-
-                {/* Price Card */}
-                <div className="rounded-2xl p-4 mb-4 bg-gray-900">
-                    <div className="flex items-center justify-between mb-1">
-                        <span className="text-gray-400 text-xs">When 1 {fromCurrency} is worth</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                        <span className="text-white font-bold text-lg">{toCurrency}</span>
-                        <input
-                            type="number"
-                            name="exchangeRate"
-                            value={editableRate}
-                            onChange={e => setEditableRate(Number(e.target.value))}
-                            placeholder="0.00"
-                            step="0.0001"
-                            className="bg-transparent text-white text-2xl font-bold text-right w-32 outline-none transition-all"
-                        />
-                    </div>
-                    {isBelowMarket && (
-                        <div className="text-red-400 text-xs mt-2">
-                            Your selling price is lower than the current market price. Please adjust it to avoid any losses.
+                        <div className="flex items-center justify-between text-gray-300 text-sm mb-4">
+                            <span>Receive</span>
+                            <span className="text-white font-bold text-lg">{receiveAmount || '--'} {toCurrency}</span>
                         </div>
-                    )}
-                </div>
-
-                <div className="mt-auto flex flex-col gap-2">
-                    {/* Fee and Receive */}
-                    <div className="flex items-center justify-between text-gray-300 text-sm mb-1">
-                        <span>Fee</span>
-                        <span className="text-green-400 font-mono">0 Fee</span>
-                    </div>
-                    <div className="flex items-center justify-between text-gray-300 text-sm mb-4">
-                        <span>Receive</span>
-                        <span className="text-white font-bold text-lg">{receiveAmount || '--'} {toCurrency}</span>
-                    </div>
-                    {/* Your Active Deals Section (single line) */}
-                    <div className="w-full max-w-md mt-4 mb-2">
-                        <div className="flex items-center justify-between">
-                            <span className="text-white font-semibold">Your active sell</span>
-                            <a href="/active-sell" className="text-yellow-400 text-xs font-semibold hover:underline flex items-center gap-1">
-                                View all <span aria-hidden>→</span>
-                            </a>
+                        {/* Your Active Deals Section (single line) */}
+                        <div className="w-full max-w-md mt-4 mb-2">
+                            <div className="flex items-center justify-between">
+                                <span className="text-white font-semibold">Your active sell</span>
+                                <a href="/active-sell" className="text-blue-400 text-xs font-semibold hover:underline flex items-center gap-1">
+                                    <span className="text-blue-400">View all</span> <span aria-hidden>→</span>
+                                </a>
+                            </div>
                         </div>
+                        {/* Place Order Button */}
+                        <button
+                            type="submit"
+                            disabled={!fromAmount || parseFloat(fromAmount) === 0 || insufficientBalance}
+                            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-3 rounded-xl shadow-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+                        >
+                            Sell
+                        </button>
                     </div>
-                    {/* Place Order Button */}
-                    <button
-                        type="submit"
-                        disabled={!fromAmount || parseFloat(fromAmount) === 0 || insufficientBalance}
-                        className="w-full bg-yellow-500 text-black font-bold py-3 rounded-xl shadow-lg hover:bg-yellow-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-lg"
-                    >
-                        Sell
-                    </button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     );
 } 
