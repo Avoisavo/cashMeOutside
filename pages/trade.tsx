@@ -25,6 +25,8 @@ export default function Trade() {
   const [orderBook, setOrderBook] = useState<Order[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currencyToChange, setCurrencyToChange] = useState<'from' | 'to' | null>(null);
+  const [showFromDropdown, setShowFromDropdown] = useState(false);
+  const [showToDropdown, setShowToDropdown] = useState(false);
 
   const currencies = [
     { code: "MYR", name: "Malaysian Ringgit", flag: "https://flagcdn.com/w40/my.png" },
@@ -42,6 +44,15 @@ export default function Trade() {
     "MYR-AUD": 0.32,
     "USD-KRW": 1350,
     "AUD-KRW": 900
+  };
+
+  const mockBalances: Record<string, number> = {
+    "MYR": 5000,
+    "KRW": 5000000,
+    "USD": 1200,
+    "AUD": 800,
+    "GBP": 400,
+    "JPY": 100000
   };
 
   useEffect(() => {
@@ -186,6 +197,7 @@ export default function Trade() {
   };
 
   const handleContinueExchange = () => {
+    localStorage.setItem('exchangeIntent', JSON.stringify({ fromCurrency, toCurrency, amount }));
     router.push('/exchange');
   };
 
@@ -231,20 +243,36 @@ export default function Trade() {
         {/* From Currency Row */}
         <div className="flex items-center justify-between">
           {/* Currency Selector */}
-          <button onClick={() => openModal('from')} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-700 transition-colors">
-            <div className="w-10 h-8 rounded-md overflow-hidden border border-gray-600">
-              <img 
-                src={currencies.find(c => c.code === fromCurrency)?.flag} 
-                alt={fromCurrency} 
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <span className="text-white font-bold text-lg">{fromCurrency}</span>
-            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="relative">
+            <button
+              type="button"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 transition-colors"
+              onClick={() => setShowFromDropdown((v) => !v)}
+            >
+              <img src={currencies.find(c => c.code === fromCurrency)?.flag} alt={fromCurrency} className="w-7 h-7 rounded-full object-cover" />
+              <span className="text-white font-bold text-lg">{fromCurrency}</span>
+              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
-          
+            {showFromDropdown && (
+              <div className="absolute z-20 mt-2 w-48 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
+                {currencies.map(c => (
+                  <button
+                    key={c.code}
+                    onClick={() => { setFromCurrency(c.code); setShowFromDropdown(false); }}
+                    className="flex items-center justify-between w-full px-4 py-2 hover:bg-gray-700 text-white rounded-xl gap-2"
+                  >
+                    <span className="flex items-center gap-2">
+                      <img src={c.flag} alt={c.code} className="w-6 h-6 rounded-full object-cover" />
+                      <span className="font-bold">{c.code}</span>
+                    </span>
+                    <span className="text-xs text-gray-400 font-mono">{mockBalances[c.code]?.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           {/* Amount Input */}
           <div className="flex-1 text-right ml-4">
             <input 
@@ -272,20 +300,36 @@ export default function Trade() {
         {/* To Currency Row */}
         <div className="flex items-center justify-between">
           {/* Currency Selector */}
-          <button onClick={() => openModal('to')} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-700 transition-colors">
-            <div className="w-10 h-8 rounded-md overflow-hidden border border-gray-600">
-              <img 
-                src={currencies.find(c => c.code === toCurrency)?.flag} 
-                alt={toCurrency} 
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <span className="text-white font-bold text-lg">{toCurrency}</span>
-            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="relative">
+            <button
+              type="button"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 transition-colors"
+              onClick={() => setShowToDropdown((v) => !v)}
+            >
+              <img src={currencies.find(c => c.code === toCurrency)?.flag} alt={toCurrency} className="w-7 h-7 rounded-full object-cover" />
+              <span className="text-white font-bold text-lg">{toCurrency}</span>
+              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
-          
+            {showToDropdown && (
+              <div className="absolute z-20 mt-2 w-48 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
+                {currencies.map(c => (
+                  <button
+                    key={c.code}
+                    onClick={() => { setToCurrency(c.code); setShowToDropdown(false); }}
+                    className="flex items-center justify-between w-full px-4 py-2 hover:bg-gray-700 text-white rounded-xl gap-2"
+                  >
+                    <span className="flex items-center gap-2">
+                      <img src={c.flag} alt={c.code} className="w-6 h-6 rounded-full object-cover" />
+                      <span className="font-bold">{c.code}</span>
+                    </span>
+                    <span className="text-xs text-gray-400 font-mono">{mockBalances[c.code]?.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           {/* Converted Amount */}
           <div className="flex-1 text-right ml-4">
             <div className="text-2xl font-bold text-white">
@@ -339,14 +383,6 @@ export default function Trade() {
         </button>
       </div>
 
-      {isModalOpen && (
-        <CurrencySelectionModal
-          currencies={currencies}
-          onSelect={handleCurrencySelect}
-          onClose={closeModal}
-        />
-      )}
-
       {/* Additional Info Cards */}
       <div className="mt-4 space-y-3">
         {/* Security Notice */}
@@ -367,37 +403,3 @@ export default function Trade() {
     </div>
   );
 } 
-
-const CurrencySelectionModal = ({ currencies, onSelect, onClose }: {
-  currencies: { code: string, name: string, flag: string }[];
-  onSelect: (code: string) => void;
-  onClose: () => void;
-}) => (
-  <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 backdrop-blur-sm">
-    <div className="bg-gray-800 bg-opacity-80 rounded-2xl p-6 w-11/12 max-w-sm border border-gray-700">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-white text-lg font-bold">Select Currency</h3>
-        <button onClick={onClose} className="text-gray-400 hover:text-white">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-      <div className="space-y-3 max-h-96 overflow-y-auto">
-        {currencies.map(currency => (
-          <button
-            key={currency.code}
-            onClick={() => onSelect(currency.code)}
-            className="w-full flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-700 transition-colors"
-          >
-            <img src={currency.flag} alt={currency.name} className="w-10 h-8 rounded-md object-cover" />
-            <div>
-              <p className="text-white font-semibold text-left">{currency.code}</p>
-              <p className="text-gray-400 text-sm text-left">{currency.name}</p>
-            </div>
-          </button>
-        ))}
-      </div>
-    </div>
-  </div>
-); 

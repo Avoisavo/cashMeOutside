@@ -14,7 +14,7 @@ const currencies = [
 // Mock balances
 const mockBalances: Record<string, number> = {
     "MYR": 5000,
-    "KRW": 30000,
+    "KRW": 5000000,
     "USD": 1200,
     "AUD": 800,
     "GBP": 400,

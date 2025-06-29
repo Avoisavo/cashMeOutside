@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 
 interface Order {
@@ -25,6 +25,33 @@ export default function Exchange() {
   const router = useRouter();
   const [step, setStep] = useState<"matches" | "confirm">("matches");
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+
+  // New: State for filtered sell orders
+  const [matchingSellOrders, setMatchingSellOrders] = useState<any[]>([]);
+  const [intent, setIntent] = useState<{fromCurrency: string, toCurrency: string, amount: string} | null>(null);
+  const [selectedOrderIdx, setSelectedOrderIdx] = useState<number | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+
+  useEffect(() => {
+    // Read exchangeIntent and activeSellOrders from localStorage
+    const intentRaw = localStorage.getItem('exchangeIntent');
+    const ordersRaw = localStorage.getItem('activeSellOrders');
+    if (intentRaw && ordersRaw) {
+      const intent = JSON.parse(intentRaw);
+      const orders = JSON.parse(ordersRaw);
+      setIntent(intent);
+      // Only show inverse matches
+      const filtered = orders
+        .map((o: any) => {
+          if (o.fromCurrency === intent.toCurrency && o.toCurrency === intent.fromCurrency) {
+            return { ...o, displayRate: 1 / o.rate, displayFrom: o.toCurrency, displayTo: o.fromCurrency, isInverse: true };
+          }
+          return null;
+        })
+        .filter(Boolean);
+      setMatchingSellOrders(filtered);
+    }
+  }, []);
 
   // Hardcoded matches
   const matches: Match[] = [
@@ -113,138 +140,85 @@ export default function Exchange() {
   };
 
   const confirmExchange = () => {
-    // Update wallet balances
-    const currentMYRBalance = parseFloat(localStorage.getItem('myrBalance') || '43.00');
-    const currentKRWBalance = parseFloat(localStorage.getItem('krwBalance') || '8500');
-    
-    // Deduct RM1000 from MYR
-    const newMYRBalance = currentMYRBalance - 1000;
-    
-    // Add 325,250 KRW (based on the selected match rate)
-    const selectedMatchIndex = matches.indexOf(selectedMatch!);
-    const exchangeRate = selectedMatchIndex === 0 ? 325.20 : 320.90;
-    const krwToAdd = 1000 * exchangeRate;
-    const newKRWBalance = currentKRWBalance + krwToAdd;
-    
-    // Save updated balances to localStorage
-    localStorage.setItem('myrBalance', newMYRBalance.toString());
-    localStorage.setItem('krwBalance', newKRWBalance.toString());
-    
+    if (!selectedOrder || !intent) return;
+
+    const requestedAmount = parseFloat(intent.amount);
+    const maxBuyerAmount = selectedOrder.fromAmount / selectedOrder.displayRate;
+    const actualAmount = Math.min(requestedAmount, maxBuyerAmount);
+    const effectiveRate = selectedOrder.displayRate;
+    const bestRate = Math.max(...matchingSellOrders.map(o => o.displayRate));
+    const isBest = effectiveRate === bestRate;
+    const feeUSD = isBest ? 1 : 0;
+    const feeInTarget = feeUSD * effectiveRate;
+    const receiveAmount = actualAmount * effectiveRate;
+    const finalReceive = receiveAmount - feeInTarget;
+
+    // Get balances from localStorage, fallback to 0
+    const fromKey = intent.fromCurrency.toLowerCase() + "Balance";
+    const toKey = intent.toCurrency.toLowerCase() + "Balance";
+    const currentFromBalance = parseFloat(localStorage.getItem(fromKey) || "0");
+    const currentToBalance = parseFloat(localStorage.getItem(toKey) || "0");
+
+    // Update balances
+    const newFromBalance = currentFromBalance - actualAmount;
+    const newToBalance = currentToBalance + finalReceive;
+
+    localStorage.setItem(fromKey, newFromBalance.toString());
+    localStorage.setItem(toKey, newToBalance.toString());
+
     // Navigate to wallet page to show updated balances
     router.push('/wallet');
   };
 
+  // Helper to format time since order
+  function timeSince(dateString: string) {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffMs = now.getTime() - date.getTime();
+    const diffSec = Math.floor(diffMs / 1000);
+    if (diffSec < 60) return `${diffSec}s ago`;
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `${diffMin} min ago`;
+    const diffHr = Math.floor(diffMin / 60);
+    if (diffHr < 24) return `${diffHr} hr ago`;
+    const diffDay = Math.floor(diffHr / 24);
+    return `${diffDay}d ago`;
+  }
+
   const renderMatchesStep = () => (
     <div className="space-y-6">
-      {/* Exchange Summary */}
-      <div className="bg-black bg-opacity-40 rounded-3xl p-6 backdrop-blur-sm">
-        <div className="text-center mb-4">
+      {/* Updated summary section */}
+      {intent && (
+        <div className="bg-black bg-opacity-80 rounded-3xl p-6 mb-6 text-center">
           <div className="text-2xl font-bold text-white mb-2">
-            {amount} {fromCurrency} → {toCurrency}
+            {intent.amount} {intent.fromCurrency} → {intent.toCurrency}
           </div>
-          <div className="text-gray-300 text-sm">
-            {`${matches.length} P2P matches found`}
+          <div className="text-gray-300 text-sm mb-1">
+            {matchingSellOrders.length} P2P match{matchingSellOrders.length !== 1 ? 'es' : ''} found
           </div>
-        </div>
-        {desiredRate && (
-          <div className="text-center">
+          {matchingSellOrders.length > 0 && (
             <div className="text-gray-300 text-sm">
-              Desired Rate: {desiredRate} {toCurrency}
+              Desired Rate: {Math.max(...matchingSellOrders.map(o => o.displayRate)).toFixed(5)} {intent.toCurrency}
             </div>
-        </div>
-        )}
-      </div>
-      {/* Matches */}
-        <div className="space-y-3">
-          <h2 className="text-white font-semibold text-lg">Available P2P Matches</h2>
-          {matches.length === 0 ? (
-            <div className="bg-black bg-opacity-40 rounded-2xl p-6 backdrop-blur-sm text-center">
-              <p className="text-gray-300">No P2P matches found for this exchange.</p>
-              <p className="text-gray-400 text-sm mt-2">Try adjusting your amount or check back later.</p>
-            </div>
-          ) : (
-            matches.map((match, index) => {
-              const effectiveRate = calculateEffectiveRate(match);
-              const savings = getSavings(match);
-              const isSelected = selectedMatch === match;
-              return (
-          <div
-                  key={index}
-                  onClick={() => setSelectedMatch(match)}
-            className={`bg-black bg-opacity-40 rounded-2xl p-4 backdrop-blur-sm border-2 transition-all cursor-pointer ${
-                    isSelected 
-                ? "border-purple-500 bg-purple-500 bg-opacity-20" 
-                : "border-gray-600 hover:border-gray-500"
-            }`}
-          >
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center space-x-3">
-                <div className="text-2xl font-bold text-white">
-                        {effectiveRate.toFixed(2)}
-                </div>
-                      <div className="text-gray-300 text-sm">{toCurrency}</div>
-                      {index === 0 && (
-                  <div className="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                    BEST
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-                  <div className="text-gray-300">💰 {match.liquidity} {fromCurrency}</div>
-                  <div className="text-gray-300">⏱️ {match.estimatedTime} min</div>
-                  <div className="text-gray-300">📊 Score: {match.score.toFixed(1)}</div>
-                  </div>
-                </div>
-              );
-            })
           )}
         </div>
-
-      {/* Transaction Details - Show when match is selected */}
-      {selectedMatch && (
-        <div className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 rounded-2xl p-4 backdrop-blur-sm">
-          <h3 className="text-white font-semibold mb-3">Transaction Details</h3>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between text-gray-300">
-              <span>Exchange Amount</span>
-              <span className="text-white">{amount} {fromCurrency}</span>
-            </div>
-            <div className="flex justify-between text-gray-300">
-              <span>Transaction Fee</span>
-              <span className="text-white">
-                {selectedMatch?.totalRate === 325.20 ? "RM1" : "RM0"}
-              </span>
-            </div>
-            <div className="flex justify-between text-gray-300">
-              <span>Exchange Rate</span>
-              <span className="text-white">{calculateEffectiveRate(selectedMatch).toFixed(2)} {toCurrency}</span>
-            </div>
-            <div className="flex justify-between text-gray-300">
-              <span>You'll Receive</span>
-              <span className="text-white font-semibold">
-                {(amount * calculateEffectiveRate(selectedMatch)).toFixed(2)} {toCurrency}
-              </span>
-            </div>
-          </div>
-        </div>
       )}
-
-      {selectedMatch && (
-        <button 
-          onClick={handleContinue}
-          className="w-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl py-4 font-bold text-white text-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg"
-        >
-          Confirm Transaction
-        </button>
-      )}
+      {/* Only show matching sell orders below the summary */}
     </div>
   );
 
   const renderConfirmStep = () => {
-    if (!selectedMatch) return null;
-    const effectiveRate = calculateEffectiveRate(selectedMatch);
-    const savings = getSavings(selectedMatch);
+    if (!selectedOrder || !intent) return null;
+    const requestedAmount = parseFloat(intent.amount);
+    const maxBuyerAmount = selectedOrder.fromAmount / selectedOrder.displayRate;
+    const actualAmount = Math.min(requestedAmount, maxBuyerAmount);
+    const effectiveRate = selectedOrder.displayRate;
+    const bestRate = Math.max(...matchingSellOrders.map(o => o.displayRate));
+    const isBest = effectiveRate === bestRate;
+    const feeUSD = isBest ? 1 : 0;
+    const feeInTarget = feeUSD * effectiveRate;
+    const receiveAmount = actualAmount * effectiveRate;
+    const finalReceive = receiveAmount - feeInTarget;
     return (
       <div className="space-y-6">
         {/* Match Details */}
@@ -253,47 +227,36 @@ export default function Exchange() {
           <div className="space-y-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-white mb-2">
-                {amount} {fromCurrency} → {toCurrency}
-                </div>
+                {actualAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })} {intent.fromCurrency} → {intent.toCurrency}
+              </div>
               <div className="text-green-400 font-semibold">
-                Rate: {effectiveRate.toFixed(2)} {toCurrency}
+                Rate: {effectiveRate.toFixed(2)} {intent.toCurrency}
               </div>
             </div>
             <div className="bg-green-500 bg-opacity-20 rounded-xl p-4 border border-green-500">
               <div className="text-black-400 font-semibold text-center">
-                You'll receive {(amount * effectiveRate).toFixed(2)} {toCurrency}
+                You'll receive {finalReceive.toLocaleString(undefined, { maximumFractionDigits: 2 })} {intent.toCurrency}
+              </div>
+              <div className="text-gray-300 text-xs text-center mt-2">
+                Transaction Fee: {feeUSD} USD ({feeInTarget.toLocaleString(undefined, { maximumFractionDigits: 2 })} {intent.toCurrency})
               </div>
             </div>
           </div>
-      </div>
-        {/* Exchange Path */}
-        <div className="bg-black bg-opacity-40 rounded-2xl p-4 backdrop-blur-sm">
-          <h3 className="text-white font-semibold mb-3">Exchange Path</h3>
-          <div className="space-y-2">
-            {selectedMatch.path.map((order, index) => (
-              <div key={index} className="flex items-center justify-between text-sm">
-                <span className="text-gray-300">
-                  Step {index + 1}: {order.fromCurrency} → {order.toCurrency}
-                </span>
-                <span className="text-white">Rate: {order.rate}</span>
-          </div>
-            ))}
         </div>
-      </div>
-      {/* Security Notice */}
+        {/* Security Notice */}
         <div className="bg-black bg-opacity-40 rounded-2xl p-4 backdrop-blur-sm">
-        <div className="flex items-start space-x-3">
-          <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center mt-0.5">
-            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-white font-medium text-sm">Secure P2P Exchange</p>
-            <p className="text-gray-300 text-xs mt-1">Your funds are protected by escrow. Payment is only released after both parties confirm the transaction.</p>
+          <div className="flex items-start space-x-3">
+            <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center mt-0.5">
+              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-white font-medium text-sm">Secure P2P Exchange</p>
+              <p className="text-gray-300 text-xs mt-1">Your funds are protected by escrow. Payment is only released after both parties confirm the transaction.</p>
+            </div>
           </div>
         </div>
-      </div>
         <button 
           onClick={confirmExchange}
           className="w-full bg-gradient-to-r from-green-500 to-blue-500 rounded-xl py-4 font-bold text-white text-lg hover:from-green-600 hover:to-blue-600 transition-all duration-200 shadow-lg"
@@ -322,8 +285,129 @@ export default function Exchange() {
         </h1>
         <div className="w-10"></div>
       </div>
-      {/* Content */}
       {step === "matches" && renderMatchesStep()}
+
+      {/* Show matching sell orders if any */}
+      {step === "matches" && intent && (
+        <div className="mb-6">
+          <h2 className="text-white font-semibold text-lg mb-2">Available P2P Matches</h2>
+          {matchingSellOrders.length === 0 ? (
+            <div className="text-gray-400">No matching sell orders found for {intent.fromCurrency} → {intent.toCurrency}.</div>
+          ) : (
+            <div className="space-y-2">
+              {[...matchingSellOrders]
+                .sort((a, b) => b.displayRate - a.displayRate)
+                .map((order, idx, arr) => {
+                  // Find the best rate (highest)
+                  const bestRate = Math.max(...matchingSellOrders.map(o => o.displayRate));
+                  const isBest = order.displayRate === bestRate;
+                  const isSelected = selectedOrderIdx === idx;
+                  return (
+                    <div key={idx}>
+                      <div
+                        className={`bg-black bg-opacity-80 rounded-2xl p-4 border border-gray-500 flex flex-col space-y-2 cursor-pointer transition-all ${isSelected ? 'ring-2 ring-pink-500' : ''}`}
+                        onClick={() => setSelectedOrderIdx(idx)}
+                      >
+                        <div className="flex items-center space-x-2 mb-2">
+                          <span className="text-2xl font-bold text-white">{order.displayRate.toFixed(3)}</span>
+                          <span className="text-white">{intent.toCurrency} per {intent.fromCurrency}</span>
+                          {isBest && (
+                            <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium ml-2">BEST</span>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap items-center justify-between text-sm text-gray-300 gap-2">
+                          <div className="flex items-center space-x-1">
+                            <span className="text-blue-400">You can exchange up to:</span>
+                            <span>{(() => {
+                              const requestedAmount = parseFloat(intent.amount);
+                              const maxBuyerAmount = order.fromAmount / order.displayRate;
+                              const actualAmount = Math.min(requestedAmount, maxBuyerAmount);
+                              return `${actualAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${intent.fromCurrency}`;
+                            })()}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <span className="text-green-400">You get:</span>
+                            <span>
+                              {(() => {
+                                const requestedAmount = parseFloat(intent.amount);
+                                const maxBuyerAmount = order.fromAmount / order.displayRate;
+                                const actualAmount = Math.min(requestedAmount, maxBuyerAmount);
+                                const receiveAmount = actualAmount * order.displayRate;
+                                const feeUSD = isBest ? 1 : 0;
+                                const feeInTarget = feeUSD * order.displayRate;
+                                const finalReceive = receiveAmount - feeInTarget;
+                                return `${finalReceive.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${intent.toCurrency}`;
+                              })()}
+                            </span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <span role="img" aria-label="money">💰</span>
+                            <span>Availability: {order.fromAmount} {order.fromCurrency}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <span role="img" aria-label="clock">⏱️</span>
+                            <span>{timeSince(order.date)}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <span role="img" aria-label="score">📊</span>
+                            <span>Score: 9.8</span>
+                          </div>
+                        </div>
+                      </div>
+                      {isSelected && (
+                        <div className="mt-2 bg-gradient-to-br from-gray-800/60 to-gray-900/60 rounded-2xl p-4 text-white">
+                          <div className="font-semibold text-lg mb-3">Transaction Details</div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span>Exchange Amount</span>
+                            <span>{(() => {
+                              const requestedAmount = parseFloat(intent.amount);
+                              const maxBuyerAmount = order.fromAmount / order.displayRate;
+                              const actualAmount = Math.min(requestedAmount, maxBuyerAmount);
+                              return `${actualAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${intent.fromCurrency}`;
+                            })()}</span>
+                          </div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span>Transaction Fee</span>
+                            <span>{isBest ? '1 USD' : '0 USD'}</span>
+                          </div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span>Exchange Rate</span>
+                            <span>{order.displayRate.toFixed(3)} {intent.toCurrency} per {intent.fromCurrency}</span>
+                          </div>
+                          <div className="flex justify-between text-sm mb-1 font-bold">
+                            <span>You'll Receive</span>
+                            <span>
+                              {(() => {
+                                const requestedAmount = parseFloat(intent.amount);
+                                const maxBuyerAmount = order.fromAmount / order.displayRate;
+                                const actualAmount = Math.min(requestedAmount, maxBuyerAmount);
+                                const receiveAmount = actualAmount * order.displayRate;
+                                const feeUSD = isBest ? 1 : 0;
+                                const feeInTarget = feeUSD * order.displayRate;
+                                const finalReceive = receiveAmount - feeInTarget;
+                                return `${finalReceive.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${intent.toCurrency}`;
+                              })()}
+                            </span>
+                          </div>
+                          <button
+                            className="w-full mt-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl py-3 font-bold text-white text-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg"
+                            onClick={() => {
+                              setSelectedOrder(order);
+                              setStep('confirm');
+                            }}
+                          >
+                            Confirm Transaction
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+            </div>
+          )}
+        </div>
+      )}
+      {/* Content */}
       {step === "confirm" && renderConfirmStep()}
     </div>
   );
