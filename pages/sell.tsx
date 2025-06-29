@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import toast, { Toaster } from 'react-hot-toast';
 
 const currencies = [
     { code: "MYR", name: "Malaysian Ringgit", flag: "https://flagcdn.com/w40/my.png" },
@@ -132,7 +133,7 @@ export default function Sell() {
         const existing = JSON.parse(localStorage.getItem("activeSellOrders") || "[]");
         // Add new order
         localStorage.setItem("activeSellOrders", JSON.stringify([order, ...existing]));
-        alert(`Sell order placed: ${fromAmount} ${fromCurrency} for ${receiveAmount} ${toCurrency}`);
+        toast.success(`Sell order placed: ${fromAmount} ${fromCurrency} for ${receiveAmount} ${toCurrency}`);
         setFromAmount("");
     };
 
@@ -150,9 +151,12 @@ export default function Sell() {
         setShowToDropdown(false);
     };
 
+    const insufficientBalance = fromAmount !== "" && parseFloat(fromAmount) > mockBalances[fromCurrency];
+
     return (
         <div className="min-h-0 p-4 flex flex-col items-center">
             <h2 className="text-xl font-bold mb-6 text-center text-white">Sell</h2>
+            <Toaster position="bottom-center" containerClassName="!static" />
             <form
                 onSubmit={handleSell}
                 className="flex flex-col justify-between w-full max-w-md min-h-[60vh]"
@@ -213,6 +217,11 @@ export default function Sell() {
                             <button type="button" onClick={handleMax} className="text-yellow-400 text-xs font-semibold hover:underline">Max</button>
                         </div>
                     </div>
+                    {insufficientBalance && (
+                        <div className="text-red-400 text-xs mt-1">
+                            Insufficient balance
+                        </div>
+                    )}
                 </div>
 
                 {/* Swap Button */}
@@ -322,7 +331,7 @@ export default function Sell() {
                     {/* Place Order Button */}
                     <button
                         type="submit"
-                        disabled={!fromAmount || parseFloat(fromAmount) === 0}
+                        disabled={!fromAmount || parseFloat(fromAmount) === 0 || insufficientBalance}
                         className="w-full bg-yellow-500 text-black font-bold py-3 rounded-xl shadow-lg hover:bg-yellow-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-lg"
                     >
                         Sell
