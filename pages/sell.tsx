@@ -87,8 +87,11 @@ export default function Sell() {
 
     // Handle swap
     const handleSwap = () => {
+        if (fromCurrency === toCurrency) return;
         setFromCurrency(toCurrency);
-        setToCurrency(fromCurrency);
+        // After swap, if they become the same, pick a different 'to'
+        const newTo = currencies.find(c => c.code !== toCurrency)?.code || fromCurrency;
+        setToCurrency(newTo);
         setFromAmount("");
     };
 
@@ -131,10 +134,20 @@ export default function Sell() {
     // Dropdown handlers
     const handleFromSelect = (code: string) => {
         setFromCurrency(code);
+        if (code === toCurrency) {
+            // Pick a different toCurrency (first one that's not the same)
+            const newTo = currencies.find(c => c.code !== code)?.code || toCurrency;
+            setToCurrency(newTo);
+        }
         setShowFromDropdown(false);
     };
     const handleToSelect = (code: string) => {
         setToCurrency(code);
+        if (code === fromCurrency) {
+            // Pick a different fromCurrency (first one that's not the same)
+            const newFrom = currencies.find(c => c.code !== code)?.code || fromCurrency;
+            setFromCurrency(newFrom);
+        }
         setShowToDropdown(false);
     };
 

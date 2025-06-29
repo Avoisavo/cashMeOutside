@@ -175,8 +175,11 @@ export default function Trade() {
   };
 
   const swapCurrencies = () => {
+    if (fromCurrency === toCurrency) return;
     setFromCurrency(toCurrency);
-    setToCurrency(fromCurrency);
+    // After swap, if they become the same, pick a different 'to'
+    const newTo = currencies.find(c => c.code !== toCurrency)?.code || fromCurrency;
+    setToCurrency(newTo);
   };
 
   const handleContinueExchange = () => {
@@ -202,20 +205,27 @@ export default function Trade() {
     setCurrencyToChange(null);
   };
 
-  const handleCurrencySelect = (currencyCode: string) => {
-    if (currencyToChange === 'from') {
-      if (currencyCode === toCurrency) {
-        setToCurrency(fromCurrency);
-      }
-      setFromCurrency(currencyCode);
-    } else if (currencyToChange === 'to') {
-      if (currencyCode === fromCurrency) {
-        setFromCurrency(toCurrency);
-      }
-      setToCurrency(currencyCode);
+  const handleFromSelect = (code: string) => {
+    setFromCurrency(code);
+    if (code === toCurrency) {
+      // Pick a different toCurrency (first one that's not the same)
+      const newTo = currencies.find(c => c.code !== code)?.code || toCurrency;
+      setToCurrency(newTo);
     }
-    closeModal();
+    setShowFromDropdown(false);
   };
+
+  const handleToSelect = (code: string) => {
+    setToCurrency(code);
+    if (code === fromCurrency) {
+      // Pick a different fromCurrency (first one that's not the same)
+      const newFrom = currencies.find(c => c.code !== code)?.code || fromCurrency;
+      setFromCurrency(newFrom);
+    }
+    setShowToDropdown(false);
+  };
+
+  const insufficientBalance = amount !== "" && parseFloat(amount) > (mockBalances[fromCurrency] || 0);
 
   return (
     <div className="px-4 pb-4">
@@ -229,7 +239,7 @@ export default function Trade() {
           <div className="relative">
             <button
               type="button"
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-transparent hover:bg-gray-700 transition-colors"
               onClick={() => setShowFromDropdown((v) => !v)}
             >
               <img src={currencies.find(c => c.code === fromCurrency)?.flag} alt={fromCurrency} className="w-7 h-7 rounded-full object-cover" />
@@ -243,7 +253,7 @@ export default function Trade() {
                 {currencies.map(c => (
                   <button
                     key={c.code}
-                    onClick={() => { setFromCurrency(c.code); setShowFromDropdown(false); }}
+                    onClick={() => handleFromSelect(c.code)}
                     className="flex items-center justify-between w-full px-4 py-2 hover:bg-gray-700 text-white rounded-xl gap-2"
                   >
                     <span className="flex items-center gap-2">
@@ -265,6 +275,9 @@ export default function Trade() {
               className="w-full bg-transparent text-2xl font-bold text-white text-right placeholder-gray-400 outline-none"
               placeholder="0"
             />
+            {insufficientBalance && (
+              <div className="text-red-400 text-xs mt-1 text-right">Insufficient balance</div>
+            )}
           </div>
         </div>
 
@@ -286,7 +299,7 @@ export default function Trade() {
           <div className="relative">
             <button
               type="button"
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-transparent hover:bg-gray-700 transition-colors"
               onClick={() => setShowToDropdown((v) => !v)}
             >
               <img src={currencies.find(c => c.code === toCurrency)?.flag} alt={toCurrency} className="w-7 h-7 rounded-full object-cover" />
@@ -300,7 +313,7 @@ export default function Trade() {
                 {currencies.map(c => (
                   <button
                     key={c.code}
-                    onClick={() => { setToCurrency(c.code); setShowToDropdown(false); }}
+                    onClick={() => handleToSelect(c.code)}
                     className="flex items-center justify-between w-full px-4 py-2 hover:bg-gray-700 text-white rounded-xl gap-2"
                   >
                     <span className="flex items-center gap-2">
@@ -359,7 +372,7 @@ export default function Trade() {
         {/* Exchange Button */}
         <button 
           onClick={handleContinueExchange}
-          disabled={Number(amount) === 0}
+          disabled={Number(amount) === 0 || insufficientBalance}
           className="w-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl py-4 font-bold text-white text-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Continue Exchange
