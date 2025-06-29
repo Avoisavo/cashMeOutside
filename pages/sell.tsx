@@ -124,6 +124,9 @@ export default function Sell() {
             rate: editableRate,
             receiveAmount,
             date: new Date().toISOString(),
+            orderNo: Math.floor(Math.random() * 1e18).toString(),
+            user: `User${Math.random().toString(36).slice(2, 10)}`,
+            type: 'Sell',
         };
         // Get existing orders
         const existing = JSON.parse(localStorage.getItem("activeSellOrders") || "[]");
