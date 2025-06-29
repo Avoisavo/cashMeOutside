@@ -28,6 +28,7 @@ export default function Trade() {
   const [currencyToChange, setCurrencyToChange] = useState<'from' | 'to' | null>(null);
   const [showFromDropdown, setShowFromDropdown] = useState(false);
   const [showToDropdown, setShowToDropdown] = useState(false);
+  const [hasSellOrders, setHasSellOrders] = useState(true);
 
   // Traditional rates for comparison
   const traditionalRates = {
@@ -47,6 +48,12 @@ export default function Trade() {
       calculateBestRate();
     }
   }, [orderBook, fromCurrency, toCurrency, amount]);
+
+  useEffect(() => {
+    const ordersRaw = localStorage.getItem('activeSellOrders');
+    const orders = ordersRaw ? JSON.parse(ordersRaw) : [];
+    setHasSellOrders(orders.length > 0);
+  }, []);
 
   const loadOrderBook = async () => {
     try {
@@ -225,7 +232,25 @@ export default function Trade() {
     setShowToDropdown(false);
   };
 
-  const insufficientBalance = amount !== "" && parseFloat(amount) > (mockBalances[fromCurrency] || 0);
+  // Helper to get up-to-date balance
+  const getBalance = (code: string) => {
+    const stored = localStorage.getItem(code + "Balance");
+    return stored !== null ? parseFloat(stored) : mockBalances[code] || 0;
+  };
+
+  // Force re-render on storage/focus
+  const [, setRefresh] = useState(0);
+  useEffect(() => {
+    const refresh = () => setRefresh(v => v + 1);
+    window.addEventListener('focus', refresh);
+    window.addEventListener('storage', refresh);
+    return () => {
+      window.removeEventListener('focus', refresh);
+      window.removeEventListener('storage', refresh);
+    };
+  }, []);
+
+  const insufficientBalance = amount !== "" && parseFloat(amount) > getBalance(fromCurrency);
 
   return (
     <div className="px-4 pb-4">
@@ -260,7 +285,7 @@ export default function Trade() {
                       <img src={c.flag} alt={c.code} className="w-6 h-6 rounded-full object-cover" />
                       <span className="font-bold">{c.code}</span>
                     </span>
-                    <span className="text-xs text-gray-400 font-mono">{mockBalances[c.code]?.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                    <span className="text-xs text-gray-400 font-mono">{getBalance(c.code).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                   </button>
                 ))}
               </div>
@@ -320,7 +345,7 @@ export default function Trade() {
                       <img src={c.flag} alt={c.code} className="w-6 h-6 rounded-full object-cover" />
                       <span className="font-bold">{c.code}</span>
                     </span>
-                    <span className="text-xs text-gray-400 font-mono">{mockBalances[c.code]?.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                    <span className="text-xs text-gray-400 font-mono">{getBalance(c.code).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                   </button>
                 ))}
               </div>
@@ -372,7 +397,7 @@ export default function Trade() {
         {/* Exchange Button */}
         <button 
           onClick={handleContinueExchange}
-          disabled={Number(amount) === 0 || insufficientBalance}
+          disabled={Number(amount) === 0 || insufficientBalance || !hasSellOrders}
           className="w-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl py-4 font-bold text-white text-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Continue Exchange

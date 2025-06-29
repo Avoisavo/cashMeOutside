@@ -97,7 +97,7 @@ export default function Sell() {
 
     // Handle max
     const handleMax = () => {
-        setFromAmount(mockBalances[fromCurrency].toString());
+        setFromAmount(getBalance(fromCurrency).toString());
     };
 
     // Handle sell
@@ -151,7 +151,28 @@ export default function Sell() {
         setShowToDropdown(false);
     };
 
-    const insufficientBalance = fromAmount !== "" && parseFloat(fromAmount) > mockBalances[fromCurrency];
+    // Helper to get up-to-date balance
+    const getBalance = (code: string) => {
+        if (typeof window === 'undefined') {
+            return mockBalances[code] || 0;
+        }
+        const stored = localStorage.getItem(code + "Balance");
+        return stored !== null ? parseFloat(stored) : mockBalances[code] || 0;
+    };
+
+    // Force re-render on storage/focus
+    const [, setRefresh] = useState(0);
+    useEffect(() => {
+        const refresh = () => setRefresh(v => v + 1);
+        window.addEventListener('focus', refresh);
+        window.addEventListener('storage', refresh);
+        return () => {
+            window.removeEventListener('focus', refresh);
+            window.removeEventListener('storage', refresh);
+        };
+    }, []);
+
+    const insufficientBalance = fromAmount !== "" && parseFloat(fromAmount) > getBalance(fromCurrency);
 
     return (
         <div className="min-h-0 p-4 flex flex-col items-center">
@@ -171,7 +192,7 @@ export default function Sell() {
                 <div className="bg-gray-900 rounded-2xl p-4 -mb-2 flex flex-col relative mb-2">
                     <div className="flex items-center justify-between mb-1">
                         <span className="text-gray-400 text-xs font-semibold">From</span>
-                        <span className="text-gray-400 text-xs">Available Balance {mockBalances[fromCurrency].toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                        <span className="text-gray-400 text-xs">Available Balance {getBalance(fromCurrency).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                     </div>
                     <div className="flex items-center justify-between">
                         <div className="relative">
@@ -198,7 +219,7 @@ export default function Sell() {
                                                 <img src={c.flag} alt={c.code} className="w-6 h-6 rounded-full object-cover" />
                                                 <span className="font-bold">{c.code}</span>
                                             </span>
-                                            <span className="text-xs text-gray-400 font-mono">{mockBalances[c.code]?.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                                            <span className="text-xs text-gray-400 font-mono">{getBalance(c.code).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                                         </button>
                                     ))}
                                 </div>
@@ -269,7 +290,7 @@ export default function Sell() {
                                                 <img src={c.flag} alt={c.code} className="w-6 h-6 rounded-full object-cover" />
                                                 <span className="font-bold">{c.code}</span>
                                             </span>
-                                            <span className="text-xs text-gray-400 font-mono">{mockBalances[c.code]?.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                                            <span className="text-xs text-gray-400 font-mono">{getBalance(c.code).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                                         </button>
                                     ))}
                                 </div>
