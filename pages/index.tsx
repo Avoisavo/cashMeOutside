@@ -9,7 +9,7 @@ interface FeatureCardProps {
 }
 
 const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description }) => (
-  <div className="bg-black bg-opacity-40 rounded-2xl p-8 flex flex-col items-center">
+  <div className="bg-gray-900 bg-opacity-80 border border-[#23262F] rounded-2xl p-8 flex flex-col items-center">
     <span className="text-4xl mb-4" role="img" aria-label={title}>{icon}</span>
     <h3 className="text-xl font-semibold text-white mb-4 text-center">
       {title}
@@ -27,7 +27,7 @@ interface BenefitCardProps {
 }
 
 const BenefitCard: React.FC<BenefitCardProps> = ({ icon, title, description }) => (
-  <div className="bg-black bg-opacity-5 backdrop-blur-lg rounded-3xl p-6 shadow-xl hover:bg-opacity-10 transition-all duration-300">
+  <div className="bg-gray-900 bg-opacity-80 border border-[#23262F] rounded-3xl p-6 shadow-xl transition-all duration-300">
     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
       {/* Icon Container */}
       <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
@@ -126,6 +126,8 @@ export default function Landing() {
         <meta name="twitter:image" content="/og-image.jpg" />
       </Head>
 
+      {/* <div className="min-h-screen "> */}
+
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-black relative overflow-hidden">
         {/* Animated Background */}
         <div className="absolute inset-0 z-0" aria-hidden="true">
@@ -174,14 +176,14 @@ export default function Landing() {
               CashMeOutside
             </h1>
             <p className="text-xl md:text-2xl text-purple-200 mb-8 max-w-2xl mx-auto">
-              The <span className="text-pink-400 font-bold">fastest</span>,{" "}
+              The <span className="text-yellow-400 font-bold">fastest</span>,{" "}
               <span className="text-blue-400 font-bold">fairest</span> way to
               exchange currency peer-to-peer. No banks. No borders. Just people
               helping people.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 items-center">
               <button
-                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-10 rounded-2xl text-lg shadow-xl transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-purple-300"
+                className="bg-gradient-to-r from-yellow-400 to-purple-500 hover:from-yellow-500 hover:to-purple-600 text-white font-bold py-4 px-10 rounded-2xl text-lg shadow-xl transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-yellow-300"
                 onClick={handleStart}
                 aria-label="Start exchanging currency - Navigate to trading page"
               >
@@ -226,7 +228,7 @@ export default function Landing() {
 
               {/* Horizontal scrollable container */}
               <div className="flex overflow-x-auto gap-6 pb-4 scrollbar-hide snap-x snap-mandatory" role="region" aria-label="Live exchange rates">
-                <div className="flex-shrink-0 w-64 bg-gradient-to-br from-purple-600 to-pink-500 rounded-2xl p-8 text-center shadow-xl snap-center">
+                <div className="flex-shrink-0 w-64 bg-gradient-to-br from-yellow-400 to-purple-700 rounded-2xl p-8 text-center shadow-xl snap-center">
                   <div className="text-white text-lg font-semibold mb-3 opacity-90">
                     MYR → KRW
                   </div>
@@ -238,7 +240,7 @@ export default function Landing() {
                   </div>
                 </div>
 
-                <div className="flex-shrink-0 w-64 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-8 text-center shadow-xl snap-center">
+                <div className="flex-shrink-0 w-64 bg-gradient-to-br from-blue-600 to-purple-700 rounded-2xl p-8 text-center shadow-xl snap-center">
                   <div className="text-white text-lg font-semibold mb-3 opacity-90">
                     USD → KRW
                   </div>
@@ -250,7 +252,7 @@ export default function Landing() {
                   </div>
                 </div>
 
-                <div className="flex-shrink-0 w-64 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-2xl p-8 text-center shadow-xl snap-center">
+                <div className="flex-shrink-0 w-64 bg-gradient-to-br from-yellow-400 to-blue-600 rounded-2xl p-8 text-center shadow-xl snap-center">
                   <div className="text-white text-lg font-semibold mb-3 opacity-90">
                     MYR → USD
                   </div>
@@ -260,7 +262,7 @@ export default function Landing() {
                   </div>
                 </div>
 
-                <div className="flex-shrink-0 w-64 bg-gradient-to-br from-orange-600 to-red-600 rounded-2xl p-8 text-center shadow-xl snap-center">
+                <div className="flex-shrink-0 w-64 bg-gradient-to-br from-yellow-400 to-black rounded-2xl p-8 text-center shadow-xl snap-center">
                   <div className="text-white text-lg font-semibold mb-3 opacity-90">
                     EUR → USD
                   </div>
@@ -270,7 +272,7 @@ export default function Landing() {
                   </div>
                 </div>
 
-                <div className="flex-shrink-0 w-64 bg-gradient-to-br from-violet-600 to-purple-700 rounded-2xl p-8 text-center shadow-xl snap-center">
+                <div className="flex-shrink-0 w-64 bg-gradient-to-br from-blue-700 to-purple-700 rounded-2xl p-8 text-center shadow-xl snap-center">
                   <div className="text-white text-lg font-semibold mb-3 opacity-90">
                     GBP → MYR
                   </div>

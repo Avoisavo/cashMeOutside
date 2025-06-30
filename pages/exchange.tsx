@@ -256,8 +256,8 @@ export default function Exchange() {
     return (
       <div className="space-y-6">
         {/* Match Details */}
-        <div className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 rounded-3xl p-6 backdrop-blur-sm border border-gray-700">
-          <h2 className="text-white font-semibold text-lg mb-4">Confirm P2P Exchange</h2>
+        <div className="bg-gradient-to-br from-purple-800/80 to-blue-900/80 rounded-3xl p-6 backdrop-blur-md border border-purple-500/60 shadow-2xl">
+          {/* <h2 className="text-white font-semibold text-lg mb-4">Confirm P2P Exchange</h2> */}
           <div className="space-y-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-white mb-2">
@@ -267,8 +267,8 @@ export default function Exchange() {
                 Rate: {effectiveRate.toFixed(2)} {intent.toCurrency}
               </div>
             </div>
-            <div className="rounded-xl p-4 my-3 border border-purple-400 bg-gradient-to-br from-gray-800/80 to-gray-900/80 shadow-inner">
-              <div className="font-bold text-lg text-yellow-400 text-center">
+            <div className="rounded-xl p-4 my-3 border border-purple-400 bg-black/60 shadow-inner">
+              <div className="font-bold text-lg text-white text-center">
                 You'll receive {finalReceive.toLocaleString(undefined, { maximumFractionDigits: 2 })} {intent.toCurrency}
               </div>
             </div>
