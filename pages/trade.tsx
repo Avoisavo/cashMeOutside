@@ -38,6 +38,7 @@ export default function Trade() {
   const [showToDropdown, setShowToDropdown] = useState(false);
   const [hasSellOrders, setHasSellOrders] = useState(true);
   const [mounted, setMounted] = useState(false);
+  const [matchingSellOrders, setMatchingSellOrders] = useState<Order[]>([]);
 
   // Traditional rates for comparison
   const traditionalRates = {
@@ -65,8 +66,15 @@ export default function Trade() {
       const ordersRaw = localStorage.getItem('activeSellOrders');
       const orders = ordersRaw ? JSON.parse(ordersRaw) : [];
       setHasSellOrders(orders.length > 0);
+      // Find inverse sell orders
+      const matches = orders.filter(
+        (order: Order) =>
+          order.fromCurrency === toCurrency &&
+          order.toCurrency === fromCurrency
+      );
+      setMatchingSellOrders(matches);
     }
-  }, []);
+  }, [fromCurrency, toCurrency, mounted]);
 
   useEffect(() => {
     setMounted(true);
@@ -278,6 +286,11 @@ export default function Trade() {
 
   const insufficientBalance = amount !== "" && parseFloat(amount) > getBalance(fromCurrency);
 
+  const getBestInverseRate = () => {
+    if (matchingSellOrders.length === 0) return 0;
+    return Math.max(...matchingSellOrders.map(order => 1 / order.rate));
+  };
+
   return (
     <div className="px-4 pb-4">
       {/* Main Trade Card */}
@@ -400,42 +413,40 @@ export default function Trade() {
         {/* Divider */}
         <div className="border-t border-gray-700 my-4"></div>
 
-        {/* Exchange Rate Info - Modern layout */}
-        <div className="mb-2">
-          <div className="text-xs text-gray-400 font-semibold mb-1">
-            1.00 {fromCurrency} =
-          </div>
-          <div className="text-3xl font-extrabold flex items-end">
-            <span className="text-white">{bestRate.toFixed(8)}</span>
-            <span className="ml-2 text-gray-400 font-bold text-2xl">{toCurrency}</span>
-          </div>
-          <div className="text-xs text-gray-400 mt-1">
-            1 {toCurrency} = {(1 / bestRate).toFixed(5)} {fromCurrency}
-          </div>
-        </div>
-        <div className="border-t border-gray-700 my-4"></div>
-
-        {/* P2P Status Row */}
-        <div className="my-2 flex items-center gap-2">
-          <span className="inline-flex items-center px-2 py-0.5 bg-green-900/40 text-green-400 rounded-full text-xs font-semibold">
-            <CheckIcon /> P2P matches available
-          </span>
-          <span className="inline-flex items-center px-2 py-0.5 bg-yellow-900/40 text-yellow-400 rounded-full text-xs font-semibold">
-            Best rate found
-          </span>
-        </div>
-
-        {/* Savings Info - Inline, no card */}
-        {getSavings() > 0 && (
-          <div className="flex items-center border-l-4 border-yellow-400 pl-2 py-1 bg-yellow-900/10 rounded-lg my-2">
-            <SparkleIcon />
-            <span className="text-yellow-300 font-semibold text-sm">
-              Save {getSavings().toFixed(2)} {toCurrency}
-            </span>
-            <span className="text-yellow-300 text-xs ml-2">
-              vs Traditional (Rate: {getTraditionalRate()})
-            </span>
-          </div>
+        {/* P2P Info: Only show if there are matching inverse sell orders */}
+        {mounted && matchingSellOrders.length > 0 && (
+          <>
+            <div className="mb-2">
+              <div className="flex items-center justify-between text-xs font-semibold mb-1">
+                <span className="text-gray-400">1.00 {fromCurrency} =</span>
+                <span className="inline-flex items-center px-2 py-0.5 bg-yellow-900/40 text-yellow-400 rounded-full text-xs font-semibold">Best rate found</span>
+              </div>
+              <div className="text-3xl font-extrabold flex items-end">
+                <span className="text-white">{getBestInverseRate().toFixed(5)}</span>
+                <span className="ml-2 text-gray-400 font-bold text-2xl">{toCurrency}</span>
+              </div>
+              <div className="text-xs text-gray-400 mt-1">
+                1 {toCurrency} = {(1 / getBestInverseRate()).toFixed(5)} {fromCurrency}
+              </div>
+            </div>
+            <div className="border-t border-gray-700 my-4"></div>
+            <div className="my-2 flex items-center gap-2">
+              <span className="inline-flex items-center px-2 py-0.5 bg-green-900/40 text-green-400 rounded-full text-xs font-semibold">
+                <CheckIcon /> P2P matches available
+              </span>
+            </div>
+            {getSavings() > 0 && (
+              <div className="flex items-center border-l-4 border-yellow-400 pl-2 py-1 bg-yellow-900/10 rounded-lg my-2">
+                <SparkleIcon />
+                <span className="text-yellow-300 font-semibold text-sm">
+                  Save {getSavings().toFixed(2)} {toCurrency}
+                </span>
+                <span className="text-yellow-300 text-xs ml-2">
+                  vs Traditional (Rate: {getTraditionalRate()})
+                </span>
+              </div>
+            )}
+          </>
         )}
 
         {/* Exchange Button */}
