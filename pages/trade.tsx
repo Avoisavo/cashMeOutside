@@ -297,6 +297,11 @@ export default function Trade() {
       <div className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 rounded-3xl p-6 backdrop-blur-sm space-y-6 w-full max-w-md">
       <h2 className="text-xl font-bold text-white text-center">Exchange</h2>
         
+        {/* Market Price Row */}
+        <div className="flex items-center justify-between text-gray-400 text-sm mb-2">
+          <span>Market price</span>
+          <span className="font-mono text-white">{getTraditionalRate()} {fromCurrency}/{toCurrency}</span>
+        </div>
         {/* From Currency Row */}
         <div className="bg-gray-900 rounded-2xl p-4 flex flex-col relative mb-2">
           <div className="flex items-center justify-between mb-1">
@@ -417,11 +422,6 @@ export default function Trade() {
         {/* Divider */}
         <div className="border-t border-gray-700 my-4"></div>
 
-        {/* Market Price Row */}
-        <div className="flex items-center justify-between text-gray-400 text-sm mb-2">
-          <span>Market price</span>
-          <span className="font-mono text-white">{getTraditionalRate()} {fromCurrency}/{toCurrency}</span>
-        </div>
 
         {/* P2P Info: Only show if there are matching inverse sell orders */}
         {mounted && matchingSellOrders.length > 0 && (

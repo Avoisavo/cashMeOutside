@@ -77,11 +77,16 @@ export default function Sell() {
     const [editableRate, setEditableRate] = useState(defaultRate);
     const [showFromDropdown, setShowFromDropdown] = useState(false);
     const [showToDropdown, setShowToDropdown] = useState(false);
+    const [mounted, setMounted] = useState(false);
 
     // Update editableRate when currencies change
     useEffect(() => {
         setEditableRate(mockRates[`${fromCurrency}/${toCurrency}`] || 0);
     }, [fromCurrency, toCurrency]);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const receiveAmount = fromAmount && editableRate ? (parseFloat(fromAmount) * editableRate).toFixed(2) : "";
 
@@ -123,8 +128,8 @@ export default function Sell() {
         const prev = parseFloat(localStorage.getItem(key) || mockBalances[fromCurrency].toString());
         const newBalance = prev - parseFloat(fromAmount);
         localStorage.setItem(key, newBalance.toString());
-        toast.success(`Sell order placed: ${fromAmount} ${fromCurrency} for ${receiveAmount} ${toCurrency}`);
         setFromAmount("");
+        router.push('/active-sell');
     };
 
     // Mock market price for warning
@@ -193,7 +198,7 @@ export default function Sell() {
                     <div className="bg-gray-900 rounded-2xl p-4 -mb-2 flex flex-col relative mb-2">
                         <div className="flex items-center justify-between mb-1">
                             <span className="text-gray-400 text-xs font-semibold">From</span>
-                            <span className="text-gray-400 text-xs">Available Balance {getBalance(fromCurrency).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                            <span className="text-gray-400 text-xs">Available Balance {mounted ? getBalance(fromCurrency).toLocaleString(undefined, { maximumFractionDigits: 2 }) : "--"}</span>
                         </div>
                         <div className="flex items-center justify-between">
                             <div className="relative">
@@ -220,7 +225,7 @@ export default function Sell() {
                                                     <img src={c.flag} alt={c.code} className="w-6 h-6 rounded-full object-cover" />
                                                     <span className="font-bold">{c.code}</span>
                                                 </span>
-                                                <span className="text-xs text-gray-400 font-mono">{getBalance(c.code).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                                                <span className="text-xs text-gray-400 font-mono">{mounted ? getBalance(c.code).toLocaleString(undefined, { maximumFractionDigits: 2 }) : "--"}</span>
                                             </button>
                                         ))}
                                     </div>
@@ -291,7 +296,7 @@ export default function Sell() {
                                                     <img src={c.flag} alt={c.code} className="w-6 h-6 rounded-full object-cover" />
                                                     <span className="font-bold">{c.code}</span>
                                                 </span>
-                                                <span className="text-xs text-gray-400 font-mono">{getBalance(c.code).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                                                <span className="text-xs text-gray-400 font-mono">{mounted ? getBalance(c.code).toLocaleString(undefined, { maximumFractionDigits: 2 }) : "--"}</span>
                                             </button>
                                         ))}
                                     </div>

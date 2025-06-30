@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { currencies, mockBalances } from '../data/balances';
+import { QRCodeCanvas } from 'qrcode.react';
 
 interface Transaction {
   id: string;
@@ -123,15 +124,32 @@ export default function Wallet() {
   const currentCurrency = currencies.find((c) => c.code === selectedCurrency);
   const currentBalance = balance[selectedCurrency as keyof typeof balance];
 
+  const [qrModal, setQrModal] = useState<{currency: string, amount: number} | null>(null);
+
   return (
     <div className="px-4 pb-4 space-y-6">
+      {/* QR Modal */}
+      {qrModal && (
+        <div className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-90 max-w-xs sm:max-w-sm md:max-w-md p-2 flex justify-center items-center pointer-events-none">
+          <div className="bg-gray-900 rounded-3xl p-6 flex flex-col items-center relative w-full shadow-2xl border border-gray-700 pointer-events-auto">
+            <button onClick={() => setQrModal(null)} className="absolute top-3 right-3 text-gray-400 hover:text-white text-2xl">&times;</button>
+            <h3 className="text-white font-bold text-lg mb-4">Payment QR</h3>
+            <QRCodeCanvas value={`PAY:${qrModal.currency}:${accountNumber}:${qrModal.amount}`} size={160} bgColor="#181A20" fgColor="#F7FAFC" />
+            <div className="mt-4 text-white text-center text-sm">
+              {qrModal.currency} Account<br />
+              <span className="font-mono">{accountNumber}</span><br />
+              Amount: <span className="font-bold">{qrModal.amount.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})} {qrModal.currency}</span>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Currency Balances Section */}
       <div className="w-full overflow-x-auto scrollbar-hide">
         <div className="flex space-x-4 pb-2">
           {currencies.map((c) => (
-            <div key={c.code} className="flex-shrink-0 w-72 bg-[#695E93] rounded-3xl p-8 backdrop-blur-sm border border-gray-600 relative overflow-hidden">
+            <div key={c.code} className="flex-shrink-0 w-72 bg-[#695E93] rounded-3xl p-8 backdrop-blur-sm border border-gray-600 shadow-xl relative overflow-hidden mb-4">
               {/* Top-Up Plus Button */}
-              <button className="absolute top-6 right-6 w-10 h-10 bg-[#695E93] bg-opacity-20 rounded-full flex items-center justify-center shadow-lg border border-white border-opacity-30 hover:shadow-xl hover:scale-105 transition-all duration-200">
+              <button onClick={() => setQrModal({currency: c.code, amount: balance[c.code] ?? 0})} className="absolute top-6 right-6 w-10 h-10 bg-[#695E93] bg-opacity-20 rounded-full flex items-center justify-center shadow-lg border border-white border-opacity-30 hover:shadow-xl hover:scale-105 transition-all duration-200">
                 <svg
                   className="w-5 h-5 text-white drop-shadow-sm"
                   fill="none"
@@ -219,44 +237,28 @@ export default function Wallet() {
           {transactions.map((transaction) => (
             <div
               key={transaction.id}
-              className="bg-black bg-opacity-40 rounded-2xl p-4 backdrop-blur-sm border border-gray-600 hover:bg-opacity-60 transition-all cursor-pointer"
+              className="bg-gradient-to-br from-gray-800/70 to-gray-900/80 rounded-3xl p-5 border border-gray-800 mb-3 flex items-center transition-all cursor-pointer hover:scale-[1.02] hover:bg-gray-800/80 shadow-md w-full"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-full bg-black bg-opacity-60 border border-gray-600 flex items-center justify-center backdrop-blur-sm">
-                    {transaction.iconUrl ? (
-                      <img
-                        src={transaction.iconUrl}
-                        alt={transaction.title}
-                        className="w-5 h-5"
-                      />
-                    ) : (
-                      <div className="w-5 h-5 bg-gray-400 rounded"></div>
-                    )}
-                  </div>
-
-                  <div>
-                    <p className="text-white font-medium text-sm">
-                      {transaction.title}
-                    </p>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-gray-400 text-xs">
-                        {transaction.date}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="text-right">
-                  <div
-                    className={`font-semibold ${
-                      transaction.amount > 0 ? "text-green-400" : "text-white"
-                    }`}
-                  >
-                    {transaction.amount > 0 ? "+" : ""}
-                    {transaction.amount} {transaction.currency}
-                  </div>
-                </div>
+              {/* Transaction Icon */}
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-700/60 to-indigo-900/60 border border-gray-700 flex items-center justify-center mr-4 shadow-md">
+                {transaction.iconUrl ? (
+                  <img
+                    src={transaction.iconUrl}
+                    alt={transaction.title}
+                    className="w-4 h-4"
+                  />
+                ) : (
+                  <div className="w-4 h-4 bg-gray-400 rounded"></div>
+                )}
+              </div>
+              {/* Transaction Info */}
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-bold text-base truncate">{transaction.title}</p>
+                <span className="block text-gray-400 text-xs mt-0.5">{transaction.date}</span>
+              </div>
+              {/* Amount */}
+              <div className={`ml-4 text-right font-bold ${transaction.amount > 0 ? 'text-green-400' : 'text-red-400'} text-lg drop-shadow`} style={{minWidth:'80px'}}>
+                {transaction.amount > 0 ? '+' : ''}{transaction.amount} {transaction.currency}
               </div>
             </div>
           ))}

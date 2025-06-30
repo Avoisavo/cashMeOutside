@@ -267,12 +267,9 @@ export default function Exchange() {
                 Rate: {effectiveRate.toFixed(2)} {intent.toCurrency}
               </div>
             </div>
-            <div className="rounded-xl p-4 my-3 border border-yellow-400 bg-gradient-to-br from-gray-800/80 to-gray-900/80 shadow-inner">
+            <div className="rounded-xl p-4 my-3 border border-purple-400 bg-gradient-to-br from-gray-800/80 to-gray-900/80 shadow-inner">
               <div className="font-bold text-lg text-yellow-400 text-center">
                 You'll receive {finalReceive.toLocaleString(undefined, { maximumFractionDigits: 2 })} {intent.toCurrency}
-              </div>
-              <div className="text-xs text-gray-300 text-center mt-1">
-                Transaction Fee: {feeUSD} USD ({feeInTarget.toLocaleString(undefined, { maximumFractionDigits: 2 })} {intent.toCurrency})
               </div>
             </div>
           </div>
@@ -293,7 +290,7 @@ export default function Exchange() {
         </div>
         <button 
           onClick={confirmExchange}
-          className="w-full bg-yellow-400 rounded-xl py-4 font-bold text-black text-lg hover:bg-yellow-500 transition-all duration-200 shadow-lg"
+          className="w-full bg-yellow-400 rounded-xl py-4 font-bold text-black text-lg hover:bg-yellow-500 transition-all duration-200 shadow-lg flex items-center justify-center gap-2"
         >
           Confirm P2P Exchange
         </button>
@@ -338,16 +335,16 @@ export default function Exchange() {
                   return (
                     <div key={idx}>
                       <div
-                        className={`bg-gradient-to-br from-gray-800/60 to-gray-900/60 rounded-3xl p-6 backdrop-blur-sm border border-gray-700 flex flex-col space-y-2 cursor-pointer transition-all ${isSelected ? 'ring-2 ring-yellow-400' : ''}`}
+                        className={`bg-gradient-to-br from-gray-800/60 to-gray-900/60 rounded-3xl p-6 backdrop-blur-sm border border-gray-700 flex flex-col space-y-2 cursor-pointer transition-all ${isSelected ? 'ring-2 ring-purple-400' : ''}`}
                         onClick={() => setSelectedOrderIdx(idx)}
                       >
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center space-x-2">
-                            <span className="text-2xl font-bold text-yellow-400">{order.displayRate.toFixed(3)}</span>
+                            <span className="text-2xl font-bold text-purple-400">{order.displayRate.toFixed(3)}</span>
                             <span className="text-white">{intent.toCurrency} per {intent.fromCurrency}</span>
                           </div>
                           {isBest && (
-                            <span className="bg-yellow-400 text-black text-xs px-2 py-1 rounded-full font-medium">BEST</span>
+                            <span className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-xs px-2 py-1 rounded-full font-medium shadow">BEST</span>
                           )}
                         </div>
                         <div className="space-y-1 text-sm text-gray-300">
@@ -362,7 +359,7 @@ export default function Exchange() {
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-400">Recieve up to:</span>
-                            <span className="text-yellow-400 text-right">
+                            <span className="text-purple-400 text-right">
                               {(() => {
                                 const requestedAmount = parseFloat(intent.amount);
                                 const maxBuyerAmount = order.fromAmount / order.displayRate;
@@ -377,7 +374,7 @@ export default function Exchange() {
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-400">Seller Availability:</span>
-                            <span className="text-gray-100 text-right">{order.fromAmount} {order.fromCurrency}</span>
+                            <span className="text-purple-400">{order.displayRate.toFixed(3)} {intent.toCurrency} / {intent.fromCurrency}</span>
                           </div>
                           <div className="flex justify-between items-center mt-1">
                             <div className="flex items-center space-x-1">
@@ -408,7 +405,7 @@ export default function Exchange() {
                           </div>
                           <div className="flex justify-between text-sm mb-1">
                             <span>Exchange Rate</span>
-                            <span className="text-yellow-400">{order.displayRate.toFixed(3)} {intent.toCurrency} per {intent.fromCurrency}</span>
+                            <span className="text-yellow-400">{order.displayRate.toFixed(3)} {intent.toCurrency} / {intent.fromCurrency}</span>
                           </div>
                           <div className="flex justify-between text-sm mb-1 font-bold">
                             <span>You'll Receive</span>
@@ -426,7 +423,7 @@ export default function Exchange() {
                             </span>
                           </div>
                           <button
-                            className="w-full mt-4 bg-yellow-400 rounded-xl py-3 font-bold text-black text-lg hover:bg-yellow-500 transition-all duration-200 shadow-lg"
+                            className="w-full mt-4 bg-yellow-400 rounded-xl py-3 font-bold text-black text-lg hover:bg-yellow-500 transition-all duration-200 shadow-lg flex items-center justify-center gap-2"
                             onClick={() => {
                               setSelectedOrder(order);
                               setStep('confirm');

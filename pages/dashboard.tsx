@@ -59,7 +59,9 @@ export default function Home() {
     <>
       {/* Main Balance Card */}
       <div className="px-4 mb-4">
-        <div className="bg-gradient-to-br from-pink-400 via-purple-400 to-orange-400 rounded-3xl p-6 relative overflow-hidden shadow-2xl">
+      {/* <div className="bg-gradient-to-br from-pink-400 via-purple-400 to-orange-400 rounded-3xl p-6 relative overflow-hidden shadow-2xl"> */}
+
+        <div className="bg-gradient-to-br from-pink-400 via-purple-400 to-orange-400 rounded-3xl p-6 relative overflow-hidden shadow-2xl border border-white/20 mb-4">
           {/* Currency Selector and Add Balance Icon */}
           <div className="flex items-center justify-between mb-4">
             <div className="bg-purple-400 bg-opacity-30 rounded-full px-4 py-2 backdrop-blur-sm border border-white border-opacity-30">
@@ -67,7 +69,7 @@ export default function Home() {
             </div>
 
             {/* Add Balance Icon */}
-            <button className="w-10 h-10 bg-purple-400 bg-opacity-20 rounded-full flex items-center justify-center shadow-lg border border-white border-opacity-30 hover:shadow-xl hover:scale-105 transition-all duration-200">
+            <button className="w-10 h-10 bg-purple-400 bg-opacity-20 rounded-full flex items-center justify-center shadow-lg border-2 border-white border-opacity-60 hover:shadow-xl hover:scale-105 transition-all duration-200 drop-shadow-lg">
               <svg
                 className="w-5 h-5 text-white drop-shadow-sm"
                 fill="none"
@@ -99,7 +101,7 @@ export default function Home() {
 
       {/* Today's Rates Section */}
       <div className="px-4 flex-1 mb-4">
-        <div className="bg-black bg-opacity-40 rounded-3xl p-4 backdrop-blur-sm">
+        <div className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 rounded-3xl p-5 backdrop-blur-sm border border-gray-700 shadow-xl mb-4">
           {/* Section Header */}
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold text-white">Today's Rates</h2>
@@ -127,11 +129,11 @@ export default function Home() {
               <div
                 key={index}
                 className={`
-                  relative rounded-xl p-3 border transition-all duration-200 hover:scale-[1.02] cursor-pointer
+                  relative rounded-2xl p-4 border transition-all duration-200 hover:scale-[1.02] cursor-pointer shadow-md mb-2
                   ${
                     rate.code === "MYR"
                       ? "bg-gradient-to-r from-yellow-500 to-orange-500 border-yellow-400/30 shadow-lg shadow-yellow-500/25"
-                      : "bg-gray-800/60 border-gray-700/50 backdrop-blur-sm hover:bg-gray-700/60"
+                      : "bg-gradient-to-br from-gray-800/60 to-gray-900/60 border-gray-700/80 hover:bg-gray-800/80"
                   }
                 `}
               >
@@ -146,7 +148,7 @@ export default function Home() {
                     </div>
                     <div>
                       <p
-                        className={`font-medium text-xs ${
+                        className={`font-bold text-sm ${
                           rate.code === "MYR" ? "text-black" : "text-white"
                         }`}
                       >
