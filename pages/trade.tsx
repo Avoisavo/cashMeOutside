@@ -15,6 +15,14 @@ interface Order {
   balanceLocked: boolean;
 }
 
+// Heroicons SVGs for check and sparkle
+const CheckIcon = () => (
+  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+);
+const SparkleIcon = () => (
+  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364-6.364l-1.414 1.414M6.05 17.95l-1.414 1.414m12.728 0l-1.414-1.414M6.05 6.05L4.636 4.636" /></svg>
+);
+
 export default function Trade() {
   const router = useRouter();
   const [fromCurrency, setFromCurrency] = useState("MYR");
@@ -29,6 +37,7 @@ export default function Trade() {
   const [showFromDropdown, setShowFromDropdown] = useState(false);
   const [showToDropdown, setShowToDropdown] = useState(false);
   const [hasSellOrders, setHasSellOrders] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   // Traditional rates for comparison
   const traditionalRates = {
@@ -40,7 +49,9 @@ export default function Trade() {
   };
 
   useEffect(() => {
-    loadOrderBook();
+    if (typeof window !== 'undefined') {
+      loadOrderBook();
+    }
   }, []);
 
   useEffect(() => {
@@ -50,20 +61,28 @@ export default function Trade() {
   }, [orderBook, fromCurrency, toCurrency, amount]);
 
   useEffect(() => {
-    const ordersRaw = localStorage.getItem('activeSellOrders');
-    const orders = ordersRaw ? JSON.parse(ordersRaw) : [];
-    setHasSellOrders(orders.length > 0);
+    if (typeof window !== 'undefined') {
+      const ordersRaw = localStorage.getItem('activeSellOrders');
+      const orders = ordersRaw ? JSON.parse(ordersRaw) : [];
+      setHasSellOrders(orders.length > 0);
+    }
+  }, []);
+
+  useEffect(() => {
+    setMounted(true);
   }, []);
 
   const loadOrderBook = async () => {
-    try {
-      const response = await fetch('/api/match');
-      const data = await response.json();
-      if (data.success) {
-        setOrderBook(data.orderBook);
+    if (typeof window !== 'undefined') {
+      try {
+        const response = await fetch('/api/match');
+        const data = await response.json();
+        if (data.success) {
+          setOrderBook(data.orderBook);
+        }
+      } catch (error) {
+        console.error('Failed to load order book:', error);
       }
-    } catch (error) {
-      console.error('Failed to load order book:', error);
     }
   };
 
@@ -190,8 +209,10 @@ export default function Trade() {
   };
 
   const handleContinueExchange = () => {
-    localStorage.setItem('exchangeIntent', JSON.stringify({ fromCurrency, toCurrency, amount }));
-    router.push('/exchange');
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('exchangeIntent', JSON.stringify({ fromCurrency, toCurrency, amount }));
+      router.push('/exchange');
+    }
   };
 
   const formatNumber = (num: string) => {
@@ -234,20 +255,25 @@ export default function Trade() {
 
   // Helper to get up-to-date balance
   const getBalance = (code: string) => {
-    const stored = localStorage.getItem(code + "Balance");
-    return stored !== null ? parseFloat(stored) : mockBalances[code] || 0;
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(code + "Balance");
+      return stored !== null ? parseFloat(stored) : mockBalances[code] || 0;
+    }
+    return 0;
   };
 
   // Force re-render on storage/focus
   const [, setRefresh] = useState(0);
   useEffect(() => {
-    const refresh = () => setRefresh(v => v + 1);
-    window.addEventListener('focus', refresh);
-    window.addEventListener('storage', refresh);
-    return () => {
-      window.removeEventListener('focus', refresh);
-      window.removeEventListener('storage', refresh);
-    };
+    if (typeof window !== 'undefined') {
+      const refresh = () => setRefresh(v => v + 1);
+      window.addEventListener('focus', refresh);
+      window.addEventListener('storage', refresh);
+      return () => {
+        window.removeEventListener('focus', refresh);
+        window.removeEventListener('storage', refresh);
+      };
+    }
   }, []);
 
   const insufficientBalance = amount !== "" && parseFloat(amount) > getBalance(fromCurrency);
@@ -255,62 +281,68 @@ export default function Trade() {
   return (
     <div className="px-4 pb-4">
       {/* Main Trade Card */}
-      <div className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 rounded-3xl p-6 backdrop-blur-sm space-y-6">
-        <h2 className="text-xl font-bold text-white text-center">Currency Exchange</h2>
+      <div className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 rounded-3xl p-6 backdrop-blur-sm space-y-6 w-full max-w-md">
+      <h2 className="text-xl font-bold text-white text-center">Exchange</h2>
         
         {/* From Currency Row */}
-        <div className="flex items-center justify-between">
-          {/* Currency Selector */}
-          <div className="relative">
-            <button
-              type="button"
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-transparent hover:bg-gray-700 transition-colors"
-              onClick={() => setShowFromDropdown((v) => !v)}
-            >
-              <img src={currencies.find(c => c.code === fromCurrency)?.flag} alt={fromCurrency} className="w-7 h-7 rounded-full object-cover" />
-              <span className="text-white font-bold text-lg">{fromCurrency}</span>
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            {showFromDropdown && (
-              <div className="absolute z-20 mt-2 w-48 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
-                {currencies.map(c => (
-                  <button
-                    key={c.code}
-                    onClick={() => handleFromSelect(c.code)}
-                    className="flex items-center justify-between w-full px-4 py-2 hover:bg-gray-700 text-white rounded-xl gap-2"
-                  >
-                    <span className="flex items-center gap-2">
-                      <img src={c.flag} alt={c.code} className="w-6 h-6 rounded-full object-cover" />
-                      <span className="font-bold">{c.code}</span>
-                    </span>
-                    <span className="text-xs text-gray-400 font-mono">{getBalance(c.code).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
-                  </button>
-                ))}
-              </div>
-            )}
+        <div className="bg-gray-900 rounded-2xl p-4 flex flex-col relative mb-2">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-gray-400 text-xs font-semibold">From</span>
+            <span className="text-gray-400 text-xs">Available Balance {mounted ? getBalance(fromCurrency).toLocaleString(undefined, { maximumFractionDigits: 2 }) : "--"}</span>
           </div>
-          {/* Amount Input */}
-          <div className="flex-1 text-right ml-4">
-            <input 
-              type="text" 
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="w-full bg-transparent text-2xl font-bold text-white text-right placeholder-gray-400 outline-none"
-              placeholder="0"
-            />
-            {insufficientBalance && (
-              <div className="text-red-400 text-xs mt-1 text-right">Insufficient balance</div>
-            )}
+          <div className="flex items-center justify-between">
+            <div className="relative">
+              <button
+                type="button"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-transparent hover:bg-gray-700 transition-colors"
+                onClick={() => setShowFromDropdown((v) => !v)}
+              >
+                <img src={currencies.find(c => c.code === fromCurrency)?.flag} alt={fromCurrency} className="w-7 h-7 rounded-full object-cover" />
+                <span className="text-white font-bold text-lg">{fromCurrency}</span>
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {showFromDropdown && (
+                <div className="absolute z-20 mt-2 w-48 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
+                  {currencies.map(c => (
+                    <button
+                      key={c.code}
+                      onClick={() => handleFromSelect(c.code)}
+                      className="flex items-center justify-between w-full px-4 py-2 hover:bg-gray-700 text-white rounded-xl gap-2"
+                    >
+                      <span className="flex items-center gap-2">
+                        <img src={c.flag} alt={c.code} className="w-6 h-6 rounded-full object-cover" />
+                        <span className="font-bold">{c.code}</span>
+                      </span>
+                      <span className="text-xs text-gray-400 font-mono">{mounted ? getBalance(c.code).toLocaleString(undefined, { maximumFractionDigits: 2 }) : "--"}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="flex items-center gap-1">
+              <input 
+                type="text" 
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="bg-transparent text-white text-lg font-bold text-right w-24 outline-none"
+                placeholder="0"
+              />
+              <span className="text-gray-500">|</span>
+              <button type="button" onClick={() => setAmount(getBalance(fromCurrency).toString())} className="text-yellow-400 text-xs font-semibold hover:underline">Max</button>
+            </div>
           </div>
+          {mounted && insufficientBalance && (
+            <div className="text-red-400 text-xs mt-1">Insufficient balance</div>
+          )}
         </div>
 
         {/* Swap Button */}
-        <div className="flex justify-center py-2">
+        <div className="flex justify-center -my-4 z-10 relative">
           <button 
             onClick={swapCurrencies}
-            className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors shadow-lg"
+            className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center hover:bg-yellow-600 transition-colors shadow-lg border-4 border-black"
           >
             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
@@ -319,78 +351,90 @@ export default function Trade() {
         </div>
 
         {/* To Currency Row */}
-        <div className="flex items-center justify-between">
-          {/* Currency Selector */}
-          <div className="relative">
-            <button
-              type="button"
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-transparent hover:bg-gray-700 transition-colors"
-              onClick={() => setShowToDropdown((v) => !v)}
-            >
-              <img src={currencies.find(c => c.code === toCurrency)?.flag} alt={toCurrency} className="w-7 h-7 rounded-full object-cover" />
-              <span className="text-white font-bold text-lg">{toCurrency}</span>
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            {showToDropdown && (
-              <div className="absolute z-20 mt-2 w-48 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
-                {currencies.map(c => (
-                  <button
-                    key={c.code}
-                    onClick={() => handleToSelect(c.code)}
-                    className="flex items-center justify-between w-full px-4 py-2 hover:bg-gray-700 text-white rounded-xl gap-2"
-                  >
-                    <span className="flex items-center gap-2">
-                      <img src={c.flag} alt={c.code} className="w-6 h-6 rounded-full object-cover" />
-                      <span className="font-bold">{c.code}</span>
-                    </span>
-                    <span className="text-xs text-gray-400 font-mono">{getBalance(c.code).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
-                  </button>
-                ))}
-              </div>
-            )}
+        <div className="bg-gray-900 rounded-2xl p-4 flex flex-col relative mb-2">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-gray-400 text-xs font-semibold">To</span>
+            <span className="text-gray-400 text-xs">&nbsp;</span>
           </div>
-          {/* Converted Amount */}
-          <div className="flex-1 text-right ml-4">
-            <div className="text-2xl font-bold text-white">
-              {formatNumber(convertedAmount)}
+          <div className="flex items-center justify-between">
+            <div className="relative">
+              <button
+                type="button"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-transparent hover:bg-gray-700 transition-colors"
+                onClick={() => setShowToDropdown((v) => !v)}
+              >
+                <img src={currencies.find(c => c.code === toCurrency)?.flag} alt={toCurrency} className="w-7 h-7 rounded-full object-cover" />
+                <span className="text-white font-bold text-lg">{toCurrency}</span>
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {showToDropdown && (
+                <div className="absolute z-20 mt-2 w-48 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
+                  {currencies.map(c => (
+                    <button
+                      key={c.code}
+                      onClick={() => handleToSelect(c.code)}
+                      className="flex items-center justify-between w-full px-4 py-2 hover:bg-gray-700 text-white rounded-xl gap-2"
+                    >
+                      <span className="flex items-center gap-2">
+                        <img src={c.flag} alt={c.code} className="w-6 h-6 rounded-full object-cover" />
+                        <span className="font-bold">{c.code}</span>
+                      </span>
+                      <span className="text-xs text-gray-400 font-mono">{mounted ? getBalance(c.code).toLocaleString(undefined, { maximumFractionDigits: 2 }) : "--"}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
+            <input
+              type="text"
+              value={formatNumber(convertedAmount)}
+              readOnly
+              placeholder="0"
+              className="bg-transparent text-white text-lg font-bold text-right w-32 outline-none"
+            />
           </div>
         </div>
 
         {/* Divider */}
-        <div className="border-t border-gray-600 my-6"></div>
+        <div className="border-t border-gray-700 my-4"></div>
 
-        {/* Exchange Rate Info */}
-        <div className="bg-green-500 rounded-2xl p-4">
-          <div className="text-center">
-            <div className="text-white font-bold text-lg mb-1">
-              1 {fromCurrency} = {bestRate.toFixed(2)} {toCurrency}
-            </div>
-            <div className="text-white text-sm opacity-90">
-              P2P Rate • Updated 2s ago
-            </div>
+        {/* Exchange Rate Info - Modern layout */}
+        <div className="mb-2">
+          <div className="text-xs text-gray-400 font-semibold mb-1">
+            1.00 {fromCurrency} =
+          </div>
+          <div className="text-3xl font-extrabold flex items-end">
+            <span className="text-white">{bestRate.toFixed(8)}</span>
+            <span className="ml-2 text-gray-400 font-bold text-2xl">{toCurrency}</span>
+          </div>
+          <div className="text-xs text-gray-400 mt-1">
+            1 {toCurrency} = {(1 / bestRate).toFixed(5)} {fromCurrency}
           </div>
         </div>
+        <div className="border-t border-gray-700 my-4"></div>
 
-        {/* Peer Info */}
-        <div className="flex items-center justify-center space-x-2 text-green-400 py-2">
-          <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-          <span className="text-sm font-medium">P2P matches available • Best rate found</span>
+        {/* P2P Status Row */}
+        <div className="my-2 flex items-center gap-2">
+          <span className="inline-flex items-center px-2 py-0.5 bg-green-900/40 text-green-400 rounded-full text-xs font-semibold">
+            <CheckIcon /> P2P matches available
+          </span>
+          <span className="inline-flex items-center px-2 py-0.5 bg-yellow-900/40 text-yellow-400 rounded-full text-xs font-semibold">
+            Best rate found
+          </span>
         </div>
 
-        {/* Savings Info */}
+        {/* Savings Info - Inline, no card */}
         {getSavings() > 0 && (
-        <div className="bg-yellow-100 rounded-2xl p-4">
-          <div className="text-center">
-            <div className="text-orange-600 font-bold text-lg">
-                Save {getSavings().toFixed(2)} {toCurrency}
-            </div>
-            <div className="text-orange-600 text-sm">
-                vs Traditional (Rate: {getTraditionalRate()})
-              </div>
-            </div>
+          <div className="flex items-center border-l-4 border-yellow-400 pl-2 py-1 bg-yellow-900/10 rounded-lg my-2">
+            <SparkleIcon />
+            <span className="text-yellow-300 font-semibold text-sm">
+              Save {getSavings().toFixed(2)} {toCurrency}
+            </span>
+            <span className="text-yellow-300 text-xs ml-2">
+              vs Traditional (Rate: {getTraditionalRate()})
+            </span>
           </div>
         )}
 
@@ -398,7 +442,7 @@ export default function Trade() {
         <button 
           onClick={handleContinueExchange}
           disabled={Number(amount) === 0 || insufficientBalance || !hasSellOrders}
-          className="w-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl py-4 font-bold text-white text-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold py-3 rounded-xl shadow-lg hover:from-yellow-500 hover:to-yellow-400 transition-all text-lg mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Continue Exchange
         </button>
