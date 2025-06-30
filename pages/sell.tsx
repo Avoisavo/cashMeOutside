@@ -236,7 +236,7 @@ export default function Sell() {
                                     className="bg-transparent text-white text-lg font-bold text-right w-24 outline-none"
                                 />
                                 <span className="text-gray-500">|</span>
-                                <button type="button" onClick={handleMax} className="text-blue-400 text-xs font-semibold hover:underline">Max</button>
+                                <button type="button" onClick={handleMax} className="text-yellow-400 text-xs font-semibold hover:underline">Max</button>
                             </div>
                         </div>
                         {insufficientBalance && (
@@ -251,7 +251,7 @@ export default function Sell() {
                         <button
                             type="button"
                             onClick={handleSwap}
-                            className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors shadow-lg border-4 border-black"
+                            className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center hover:bg-yellow-600 transition-colors shadow-lg border-4 border-black"
                             aria-label="Swap currencies"
                         >
                             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -345,8 +345,8 @@ export default function Sell() {
                         <div className="w-full max-w-md mt-4 mb-2">
                             <div className="flex items-center justify-between">
                                 <span className="text-white font-semibold">Your active sell</span>
-                                <a href="/active-sell" className="text-blue-400 text-xs font-semibold hover:underline flex items-center gap-1">
-                                    <span className="text-blue-400">View all</span> <span aria-hidden>→</span>
+                                <a href="/active-sell" className="text-yellow-400 text-xs font-semibold hover:underline flex items-center gap-1">
+                                    View all <span aria-hidden>→</span>
                                 </a>
                             </div>
                         </div>
@@ -354,7 +354,7 @@ export default function Sell() {
                         <button
                             type="submit"
                             disabled={!fromAmount || parseFloat(fromAmount) === 0 || insufficientBalance}
-                            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-3 rounded-xl shadow-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+                            className="w-full bg-yellow-500 text-black font-bold py-3 rounded-xl shadow-lg hover:bg-yellow-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-lg"
                         >
                             Sell
                         </button>
