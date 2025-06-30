@@ -188,6 +188,7 @@ export default function Exchange() {
           date: new Date().toISOString(),
         });
         if (Number(order.fromAmount) <= 0) {
+
           // Move to completedSellOrders
           const completedRaw = localStorage.getItem('completedSellOrders');
           const completed = completedRaw ? JSON.parse(completedRaw) : [];
@@ -222,15 +223,15 @@ export default function Exchange() {
     <div className="space-y-6">
       {/* Updated summary section */}
       {intent && (
-        <div className="bg-black bg-opacity-80 rounded-3xl p-6 mb-6 text-center">
+        <div className="bg-gray-900 rounded-3xl p-6 mb-6 text-center border border-gray-700">
           <div className="text-2xl font-bold text-white mb-2">
             {intent.amount} {intent.fromCurrency} → {intent.toCurrency}
           </div>
-          <div className="text-gray-300 text-sm mb-1">
+          <div className="text-gray-400 text-sm mb-1">
             {matchingSellOrders.length} P2P match{matchingSellOrders.length !== 1 ? 'es' : ''} found
           </div>
           {matchingSellOrders.length > 0 && (
-            <div className="text-gray-300 text-sm">
+            <div className="text-yellow-400 text-sm font-semibold">
               Desired Rate: {Math.max(...matchingSellOrders.map(o => o.displayRate)).toFixed(5)} {intent.toCurrency}
             </div>
           )}
@@ -255,29 +256,29 @@ export default function Exchange() {
     return (
       <div className="space-y-6">
         {/* Match Details */}
-        <div className="bg-black bg-opacity-40 rounded-3xl p-6 backdrop-blur-sm">
+        <div className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 rounded-3xl p-6 backdrop-blur-sm border border-gray-700">
           <h2 className="text-white font-semibold text-lg mb-4">Confirm P2P Exchange</h2>
           <div className="space-y-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-white mb-2">
                 {actualAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })} {intent.fromCurrency} → {intent.toCurrency}
               </div>
-              <div className="text-green-400 font-semibold">
+              <div className="text-yellow-400 font-semibold">
                 Rate: {effectiveRate.toFixed(2)} {intent.toCurrency}
               </div>
             </div>
-            <div className="bg-green-500 bg-opacity-20 rounded-xl p-4 border border-green-500">
-              <div className="text-black-400 font-semibold text-center">
+            <div className="rounded-xl p-4 my-3 border border-yellow-400 bg-gradient-to-br from-gray-800/80 to-gray-900/80 shadow-inner">
+              <div className="font-bold text-lg text-yellow-400 text-center">
                 You'll receive {finalReceive.toLocaleString(undefined, { maximumFractionDigits: 2 })} {intent.toCurrency}
               </div>
-              <div className="text-gray-300 text-xs text-center mt-2">
+              <div className="text-xs text-gray-300 text-center mt-1">
                 Transaction Fee: {feeUSD} USD ({feeInTarget.toLocaleString(undefined, { maximumFractionDigits: 2 })} {intent.toCurrency})
               </div>
             </div>
           </div>
         </div>
         {/* Security Notice */}
-        <div className="bg-black bg-opacity-40 rounded-2xl p-4 backdrop-blur-sm">
+        <div className="bg-gray-900 rounded-2xl p-4 border border-gray-700">
           <div className="flex items-start space-x-3">
             <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center mt-0.5">
               <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -292,7 +293,7 @@ export default function Exchange() {
         </div>
         <button 
           onClick={confirmExchange}
-          className="w-full bg-gradient-to-r from-green-500 to-blue-500 rounded-xl py-4 font-bold text-white text-lg hover:from-green-600 hover:to-blue-600 transition-all duration-200 shadow-lg"
+          className="w-full bg-yellow-400 rounded-xl py-4 font-bold text-black text-lg hover:bg-yellow-500 transition-all duration-200 shadow-lg"
         >
           Confirm P2P Exchange
         </button>
@@ -331,36 +332,37 @@ export default function Exchange() {
               {[...matchingSellOrders]
                 .sort((a, b) => b.displayRate - a.displayRate)
                 .map((order, idx, arr) => {
-                  // Find the best rate (highest)
                   const bestRate = Math.max(...matchingSellOrders.map(o => o.displayRate));
                   const isBest = order.displayRate === bestRate;
                   const isSelected = selectedOrderIdx === idx;
                   return (
                     <div key={idx}>
                       <div
-                        className={`bg-black bg-opacity-80 rounded-2xl p-4 border border-gray-500 flex flex-col space-y-2 cursor-pointer transition-all ${isSelected ? 'ring-2 ring-pink-500' : ''}`}
+                        className={`bg-gradient-to-br from-gray-800/60 to-gray-900/60 rounded-3xl p-6 backdrop-blur-sm border border-gray-700 flex flex-col space-y-2 cursor-pointer transition-all ${isSelected ? 'ring-2 ring-yellow-400' : ''}`}
                         onClick={() => setSelectedOrderIdx(idx)}
                       >
-                        <div className="flex items-center space-x-2 mb-2">
-                          <span className="text-2xl font-bold text-white">{order.displayRate.toFixed(3)}</span>
-                          <span className="text-white">{intent.toCurrency} per {intent.fromCurrency}</span>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center space-x-2">
+                            <span className="text-2xl font-bold text-yellow-400">{order.displayRate.toFixed(3)}</span>
+                            <span className="text-white">{intent.toCurrency} per {intent.fromCurrency}</span>
+                          </div>
                           {isBest && (
-                            <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium ml-2">BEST</span>
+                            <span className="bg-yellow-400 text-black text-xs px-2 py-1 rounded-full font-medium">BEST</span>
                           )}
                         </div>
-                        <div className="flex flex-wrap items-center justify-between text-sm text-gray-300 gap-2">
-                          <div className="flex items-center space-x-1">
-                            <span className="text-blue-400">You can exchange up to:</span>
-                            <span>{(() => {
+                        <div className="space-y-1 text-sm text-gray-300">
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">Exchange up to:</span>
+                            <span className="text-gray-100 text-right">{(() => {
                               const requestedAmount = parseFloat(intent.amount);
                               const maxBuyerAmount = order.fromAmount / order.displayRate;
                               const actualAmount = Math.min(requestedAmount, maxBuyerAmount);
                               return `${actualAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${intent.fromCurrency}`;
                             })()}</span>
                           </div>
-                          <div className="flex items-center space-x-1">
-                            <span className="text-green-400">You get:</span>
-                            <span>
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">Recieve up to:</span>
+                            <span className="text-yellow-400 text-right">
                               {(() => {
                                 const requestedAmount = parseFloat(intent.amount);
                                 const maxBuyerAmount = order.fromAmount / order.displayRate;
@@ -373,26 +375,27 @@ export default function Exchange() {
                               })()}
                             </span>
                           </div>
-                          <div className="flex items-center space-x-1">
-                            <span role="img" aria-label="money">💰</span>
-                            <span>Availability: {order.fromAmount} {order.fromCurrency}</span>
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">Seller Availability:</span>
+                            <span className="text-gray-100 text-right">{order.fromAmount} {order.fromCurrency}</span>
                           </div>
-                          <div className="flex items-center space-x-1">
-                            <span role="img" aria-label="clock">⏱️</span>
-                            <span>{timeSince(order.date)}</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <span role="img" aria-label="score">📊</span>
-                            <span>Score: 9.8</span>
+                          <div className="flex justify-between items-center mt-1">
+                            <div className="flex items-center space-x-1">
+                              <span className="text-gray-400">Score:</span>
+                              <span className="text-white">9.8</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <span className="text-gray-400">{timeSince(order.date)}</span>
+                            </div>
                           </div>
                         </div>
                       </div>
                       {isSelected && (
-                        <div className="mt-2 bg-gradient-to-br from-gray-800/60 to-gray-900/60 rounded-2xl p-4 text-white">
+                        <div className="mt-2 bg-gray-900 rounded-2xl p-4 text-white border border-gray-700">
                           <div className="font-semibold text-lg mb-3">Transaction Details</div>
                           <div className="flex justify-between text-sm mb-1">
                             <span>Exchange Amount</span>
-                            <span>{(() => {
+                            <span className="text-yellow-400">{(() => {
                               const requestedAmount = parseFloat(intent.amount);
                               const maxBuyerAmount = order.fromAmount / order.displayRate;
                               const actualAmount = Math.min(requestedAmount, maxBuyerAmount);
@@ -401,15 +404,15 @@ export default function Exchange() {
                           </div>
                           <div className="flex justify-between text-sm mb-1">
                             <span>Transaction Fee</span>
-                            <span>{isBest ? '1 USD' : '0 USD'}</span>
+                            <span className="text-yellow-400">{isBest ? '1 USD' : '0 USD'}</span>
                           </div>
                           <div className="flex justify-between text-sm mb-1">
                             <span>Exchange Rate</span>
-                            <span>{order.displayRate.toFixed(3)} {intent.toCurrency} per {intent.fromCurrency}</span>
+                            <span className="text-yellow-400">{order.displayRate.toFixed(3)} {intent.toCurrency} per {intent.fromCurrency}</span>
                           </div>
                           <div className="flex justify-between text-sm mb-1 font-bold">
                             <span>You'll Receive</span>
-                            <span>
+                            <span className="text-yellow-400">
                               {(() => {
                                 const requestedAmount = parseFloat(intent.amount);
                                 const maxBuyerAmount = order.fromAmount / order.displayRate;
@@ -423,7 +426,7 @@ export default function Exchange() {
                             </span>
                           </div>
                           <button
-                            className="w-full mt-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl py-3 font-bold text-white text-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg"
+                            className="w-full mt-4 bg-yellow-400 rounded-xl py-3 font-bold text-black text-lg hover:bg-yellow-500 transition-all duration-200 shadow-lg"
                             onClick={() => {
                               setSelectedOrder(order);
                               setStep('confirm');
