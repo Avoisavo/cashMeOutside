@@ -5,7 +5,7 @@ export default function BottomNavigation() {
 
   // Map routes to section names
   const sectionMap: Record<string, string> = {
-    "/": "Home",
+    "/dashboard": "Home",
     "/trade": "Trade",
     "/sell": "Sell",
     "/wallet": "Wallet",
@@ -26,7 +26,7 @@ export default function BottomNavigation() {
         <div className="flex items-center justify-center px-3 py-3">
           {/* Home */}
           <button 
-            onClick={() => handleNavigation("/")}
+            onClick={() => handleNavigation("/dashboard")}
             className={`flex items-center justify-center px-7 py-3 rounded-full transition-all duration-200 ${
               selectedSection === "Home" 
                 ? 'bg-gray-600/60 text-white' 

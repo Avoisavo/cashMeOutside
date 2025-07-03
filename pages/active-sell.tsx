@@ -25,6 +25,8 @@ export default function ActiveSell() {
     const [orders, setOrders] = useState<SellOrder[]>([]);
     const [expanded, setExpanded] = useState<number|null>(null);
     const router = useRouter();
+    const [showRevenueModal, setShowRevenueModal] = useState(false);
+    const [showCashOutNotification, setShowCashOutNotification] = useState(false);
 
     useEffect(() => {
         const stored = JSON.parse(localStorage.getItem("activeSellOrders") || "[]");
@@ -48,6 +50,12 @@ export default function ActiveSell() {
                     </svg>
                 </button>
                 <h2 className="text-xl font-bold text-center text-white flex-1">Your Active Sell Orders</h2>
+                <button
+                    className="ml-2 px-2 py-1 h-8 text-xs bg-purple-600 text-white rounded-full font-semibold shadow hover:bg-green-700 transition"
+                    onClick={() => setShowRevenueModal(true)}
+                >
+                    Revenue
+                </button>
             </div>
             {orders.length === 0 ? (
                 <div className="text-gray-400 text-center">No active sell orders.</div>
@@ -115,6 +123,53 @@ export default function ActiveSell() {
                             </div>
                         );
                     })}
+                </div>
+            )}
+            {showRevenueModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+                    <div className="bg-gray-900 rounded-2xl p-8 shadow-2xl border border-gray-700 max-w-xs w-full flex flex-col items-center">
+                        <div className="text-white text-xl font-bold mb-2 text-center">Your Revenue Details</div>
+                        <div className="w-full max-h-40 overflow-y-auto bg-gray-800 rounded-lg p-3 mb-4 border border-gray-700">
+                            <div className="flex flex-col gap-2">
+                                <div className="flex justify-between text-sm text-gray-200"><span>DN2301</span><span>Transaction</span><span className="text-green-400 font-semibold">RM10</span></div>
+                                <div className="flex justify-between text-sm text-gray-200"><span>DN12321</span><span>Transaction</span><span className="text-green-400 font-semibold">RM10</span></div>
+                                <div className="flex justify-between text-sm text-gray-200"><span>DN8888</span><span>Transaction</span><span className="text-green-400 font-semibold">RM30</span></div>
+                                <div className="flex justify-between text-sm text-gray-200"><span>DN5555</span><span>Transaction</span><span className="text-green-400 font-semibold">RM50</span></div>
+                                <div className="flex justify-between text-sm text-gray-200"><span>DN7777</span><span>Transaction</span><span className="text-green-400 font-semibold">RM50</span></div>
+                            </div>
+                        </div>
+                        <div className="w-full flex justify-between items-center mb-4 px-1">
+                            <span className="text-gray-300 font-semibold">Total Revenue</span>
+                            <span className="text-2xl font-bold text-green-400">RM150</span>
+                        </div>
+                        <div className="flex gap-4 mt-2">
+                            <button
+                                className="px-4 py-2 bg-purple-600 text-white rounded-full font-semibold hover:bg-blue-700 transition"
+                                onClick={() => {
+                                    // Add 150 to MYR balance in localStorage
+                                    const key = 'MYRBalance';
+                                    const current = parseFloat(localStorage.getItem(key) || '0');
+                                    localStorage.setItem(key, (current + 150).toString());
+                                    setShowRevenueModal(false);
+                                    setShowCashOutNotification(true);
+                                    setTimeout(() => setShowCashOutNotification(false), 2000);
+                                }}
+                            >
+                                Cash Out
+                            </button>
+                            <button
+                                className="px-4 py-2 bg-gray-600 text-white rounded-full font-semibold hover:bg-gray-700 transition"
+                                onClick={() => setShowRevenueModal(false)}
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {showCashOutNotification && (
+                <div className="fixed top-8 left-1/2 transform -translate-x-1/2 z-50 bg-green-600 text-white px-6 py-3 rounded-full shadow-lg font-semibold text-center animate-fade-in">
+                    Successfully cash out
                 </div>
             )}
         </div>

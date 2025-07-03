@@ -30,6 +30,8 @@ export default function App({ Component, pageProps }: AppProps) {
 
   console.log('Current pathname:', router.pathname, 'Selected section:', selectedSection);
 
+  const isLanding = router.pathname === "/";
+
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4 overflow-hidden">
       {/* iPhone 16 Frame Container */}
@@ -56,17 +58,14 @@ export default function App({ Component, pageProps }: AppProps) {
                   
                   {/* Content */}
                   <div className="relative z-10 h-full flex flex-col">
-                    <Header />
+                    {!isLanding && <Header />}
                     
                     {/* Dynamic Page Content - This is where scrolling should happen */}
                     <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
                       <Component {...pageProps} />
                     </div>
                     
-                    <BottomNavigation 
-                      selectedSection={selectedSection} 
-                      onSectionChange={setSelectedSection} 
-                    />
+                    {!isLanding && <BottomNavigation />}
                   </div>
                 </div>
               </div>
